@@ -1,0 +1,41 @@
+{
+  "common": {
+    "name": "js2fs",
+    "version": "0.0.1",
+    "title": "Javascript to file",
+    "desc": "Javascript to file",
+    "platform": "Javascript/Node.js",
+    "news": {
+      "0.0.1": {
+        "en": "Initial commit",
+        "de": "Erstveröffentlichung"
+      }
+    },
+    "keywords": [
+      "sync",
+      "iobroker file",
+      "JetBrains",
+      "webstorm",
+      "file",
+      "debug",
+      "editor",
+      "ide"
+    ],
+    "mode": "daemon",
+    "icon": "js2fs.png",
+    "extIcon": "https://raw.githubusercontent.com/soef/iobroker.js2fs/master/admin/js2fs.png",
+    "readme": "https://github.com/soef/iobroker.js2fs/blob/master/README.md",
+    "loglevel": "info",
+    "type": "hardware",
+    "enabled": true,
+    "messagebox": true
+  },
+  "native": {
+    "rootDir": "",
+    "useGlobalScriptAsPrefix": true,
+    "restartScript": true,
+    "disableWrite": false
+  },
+  "objects": [
+  ]
+}
