@@ -1,10 +1,10 @@
-![Logo](admin/js2ftp.png)
+![Logo](admin/js2fs.png)
 
-### ioBroker.js2ftp 
+### ioBroker.js2fs 
 
-[![NPM version](https://img.shields.io/npm/v/iobroker.js2ftp.svg)](https://www.npmjs.com/package/iobroker.js2ftp)
-[![Tests](https://img.shields.io/travis/soef/iobroker.js2ftp/master.svg)](https://travis-ci.org/soef/iobroker.js2ftp)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/soef/iobroker.js2ftp/blob/master/LICENSE)
+[![NPM version](https://img.shields.io/npm/v/iobroker.js2fs.svg)](https://www.npmjs.com/package/iobroker.js2fs)
+[![Tests](https://img.shields.io/travis/soef/iobroker.js2fs/master.svg)](https://travis-ci.org/soef/iobroker.js2fs)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/soef/iobroker.js2fs/blob/master/LICENSE)
 
 This adapter allows you to edit your ioBroker javascript files with your preferred IDE/editor.
 
@@ -21,13 +21,11 @@ This adapter allows you to edit your ioBroker javascript files with your preferr
 ### Usage
 e.g.: Webstorm: 
 
-Menu: Tools/Deployment/Configuration, add ftp, create a local directory to sync to 
-To debug and use breakpoints, you have to load ioBroker.javascript as project in Webstorm.
 
 #### Installation
 Execute the following command in the iobroker root directory (e.g. in /opt/iobroker)
 ```
-npm install iobroker.js2ftp 
+npm install iobroker.js2fs 
 ```
 
 

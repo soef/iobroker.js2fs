@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.2": {
+        "en": "readme & icon",
+        "de": "readme und Icon"
+      },
       "0.0.1": {
         "en": "Initial commit",
         "de": "Erstveröffentlichung"
@@ -26,7 +30,7 @@
     "extIcon": "https://raw.githubusercontent.com/soef/iobroker.js2fs/master/admin/js2fs.png",
     "readme": "https://github.com/soef/iobroker.js2fs/blob/master/README.md",
     "loglevel": "info",
-    "type": "hardware",
+    "type": "script",
     "enabled": true,
     "messagebox": true
   },
