@@ -368,7 +368,7 @@ let Scripts = function () {
                 oldEnabled = o.common.enabled;
             }
         }, function (err, o) {
-            if (!oldEnabled) callback && callback (null);
+            if (!oldEnabled) return callback && callback (null);
             self.enable (id, true, function (err, o) {
                 callback && callback (null);
             })
