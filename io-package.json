@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.4": {
+        "en": "wrong old enabled value",
+        "de": "falscher old enabled Wert"
+      },
       "0.0.3": {
         "en": "Script is no longer enabled when saving",
         "de": "Script wird beim Speichern nicht mehr aktiviert"

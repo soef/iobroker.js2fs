@@ -364,8 +364,8 @@ let Scripts = function () {
             obj.common.mtime = mtime;
             if (!mtime) getmtime (fn, o.common);
             if (adapter.config.restartScript) {
-                o.common.enabled = false;
                 oldEnabled = o.common.enabled;
+                o.common.enabled = false;
             }
         }, function (err, o) {
             if (!oldEnabled) return callback && callback (null);
