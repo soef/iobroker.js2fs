@@ -527,6 +527,12 @@ let watcher = {
                 let obj = scripts.fn2obj(filename);
                 let cmd = (file.source.match(/^[\/\s]*!!([\S]*)/) || []) [1];
                 switch (cmd) {
+                    case 'enable':
+                        soef.modifyObject(obj.id, { common: { enabled: true }});
+                        return;
+                    case 'disable':
+                        soef.modifyObject(obj.id, { common: { enabled: false }});
+                        return;
                     case 'debug':
                     case 'insertGlobalScript':
                         //file.source = file.source.remove(/^insertGlobalScript![\s]*/);
