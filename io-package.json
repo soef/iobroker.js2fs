@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.5",
+    "version": "0.0.6",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.6": {
+        "en": "icon changed",
+        "de": "icon geändert"
+      },
       "0.0.5": {
         "en": "command for enable/disable script",
         "de": "Kommando um Scripte zu aktivieren/deaktivieren"
