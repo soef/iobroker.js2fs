@@ -24,8 +24,8 @@ const
 ;
 
 let noext, killext, ignoreObjectChange, scripts;
-let reRootDir;
-
+let reRootDir, logFilter, copyLog;
+let logTimer = soef.Timer();
 
 noext = killext = function (fn) {
     return fn.replace(/\.[^.]*?$/, '');
@@ -525,8 +525,15 @@ let watcher = {
                 //return scripts.delete(filename);
             } else {
                 let obj = scripts.fn2obj(filename);
-                let cmd = (file.source.match(/^[\/\s]*!!([\S]*)/) || []) [1];
+                let cmd = (file.source.match(/^[\/\s]*!!([\S]*)/) || []) [1] || 0;
+                let ar = cmd.match(/^(.*?)=(.*?)$/);
+                if (ar && ar[1]) cmd = ar[1];
                 switch (cmd) {
+                    case 'log':
+                        logFilter = ar[2];
+                        if (logFilter === 'this' || logFilter === 'self') logFilter = filename.replace(/\\(.*?).js$/, '$1');
+                        logTimer.set(copyLog, 500);
+                        return;
                     case 'enable':
                         soef.modifyObject(obj.id, { common: { enabled: true }});
                         return;
@@ -697,11 +704,50 @@ function normalizeConfig(config) {
     if (config.disableWrite === undefined) config.disableWrite = false;
 }
 
+
+function watchLog () {
+    if (!adapter.config.ioBrokerRootdir) return;
+    let date = new Date();
+    let fn = soef.sprintf(adapter.config.ioBrokerRootdir.replace(/[\\\/]*$/, '') + '/log/iobroker.%d-%02d-%02d.log', date.getFullYear(), date.getMonth()+1, date.getDate());
+
+    fs.watchFile(fn, (curr, prev) => {
+        copyLog();
+    });
+
+    copyLog = function () {
+        adapter.log.debug('copyLog: fn=' + fn);
+        try {
+            let stat = fs.lstatSync(fn);
+            let f = fs.openSync(fn, 'r', 0o666);
+            let buf = new Buffer(40000);
+            let pos = stat.size > buf.length ? stat.size - buf.length : 0;
+            fs.readSync(f, buf, 0, buf.length, pos);
+            let ar = buf.toString().split('\r\n');
+            for (let i = ar.length - 1; i >= 0; i--) {
+                if (ar[i].indexOf('javascript.0 script.js') < 0 || (logFilter && ar[i].indexOf(logFilter) < 0)) {
+                    ar.splice(i, 1);
+                    continue;
+                }
+                let a = ar[i].match(/^20[\d]{2,2}-[\d]{2,2}-[\d]{2,2} (.*?) - .*?(warn|info|error).*?javascript\.0 script\.js\.(.*?): (.*)/);
+                ar[i] = soef.sprintf('%s%-7s%-30.30s %s', a[1], a[2], a[3], a[4]);
+            }
+            ar = ar.reverse();
+            fs.writeFileSync(adapter.config.rootDir + '/iobroker.log', ar.join('\r\n'));
+            adapter.log.info(ar[0]);
+
+        } catch (e) {
+            let i = e;
+        }
+    }
+};
+
+
 function main() {
     
     soef.switchToDebug(true);
 
     normalizeConfig(adapter.config);
+    watchLog();
     if (!adapter.config.rootDir) return;
 
     //startJavascriptAdapterInDebugMode();
