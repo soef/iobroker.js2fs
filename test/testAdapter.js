@@ -175,10 +175,10 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         else {
                             setTimeout(function() {
                                 objects.getObject('script.js.global.TestGlobal', function(err, obj) {
-                                    expect(err).to.be.ok;
+                                    expect(err).to.be.null;
                                     expect(obj.mtime).not.to.be.undefined;
                                     objects.getObject('script.js.tests.TestScript1', function(err, obj) {
-                                        expect(err).to.be.ok;
+                                        expect(err).to.be.null;
                                         expect(obj.mtime).not.to.be.undefined;
                                         expect(connectionChecked).to.be.true;
                                         onObjectChanged = null;
@@ -223,7 +223,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             fs.writeFileSync(scriptFileTest1,scriptContent);
             setTimeout(function() {
                 objects.getObject('script.js.tests.TestScript1', function(err, obj2) {
-                    expect(err).to.be.ok;
+                    expect(err).to.be.null;
                     expect(obj2.mtime).not.to.be.undefined;
                     expect(obj2.mtime).not.to.be.equal(obj.mtime);
                     onObjectChanged = null;
@@ -252,7 +252,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         fs.writeFileSync(scriptFileTest2,scriptContent);
         setTimeout(function() {
             objects.getObject('script.js.tests.TestScript2', function(err, obj) {
-                expect(err).to.be.ok;
+                expect(err).to.be.null;
                 expect(obj.mtime).not.to.be.undefined;
                 onObjectChanged = null;
                 done();
