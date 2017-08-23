@@ -11,6 +11,7 @@ pkg.main = pkg.main || 'main.js';
 
 var adapterName = path.normalize(rootDir).replace(/\\/g, '/').split('/');
 adapterName = adapterName[adapterName.length - 2];
+var adapterStarted = false;
 
 function getAppName() {
     var parts = __dirname.replace(/\\/g, '/').split('/');
@@ -490,7 +491,6 @@ function startController(isStartAdapter, onObjectChange, onStateChange, callback
         callback  = onObjectChange;
         onObjectChange = undefined;
     }
-    var adapterStarted = false;
 
     if (pid) {
         console.error('Controller is already started!');
