@@ -144,8 +144,8 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         this.timeout(60000);
         var changedObjects = {};
         onObjectChanged = function (id, obj) {
+            console.log('Go Object-Modification for ' + id);
             if (id.substring(0,10) === 'script.js.') {
-                console.log('Go Object-Modification for ' + id);
                 changedObjects[id] = true;
                 if (Object.keys(changedObjects).length === 2) {
                     onObjectChanged = null;
