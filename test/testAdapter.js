@@ -93,8 +93,10 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             setup.setAdapterConfig(config.common, config.native);
 
             setup.startController(false, function (id, obj) {
+                    console.log('CHANGE OBJECT ' + id);
                     if (onObjectChanged) onObjectChanged(id, obj);
                 }, function (id, state) {
+                    console.log('CHANGE STATE ' + id);
                     if (onStateChanged) onStateChanged(id, state);
             },
             function (_objects, _states) {
@@ -180,7 +182,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
-        expect(fs.readFileSync(scriptFileTest1)).to.be.equal("console.log('Test Script 1');");
+        expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('Test Script 1');");
         done();
     });
 
