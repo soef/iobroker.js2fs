@@ -454,6 +454,7 @@ function startAdapter(objects, states, callback) {
     if (adapterStarted) {
         console.log('Adapter already started ...');
         if (callback) callback(objects, states);
+        return;
     }
     adapterStarted = true;
     console.log('startAdapter...');

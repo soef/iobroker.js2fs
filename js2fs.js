@@ -33,15 +33,11 @@ let reRootDir, logFilter, copyLog;
 let logTimer = soef.Timer();
 
 noext = killext = function (fn) {
-    let ext = path.extname(fn);
-    if (ext.length > 0) {
-        fn = fn.substring(0,fn.length-ext.length);
-    }
-    return fn; //fn.replace(/\.[^.]*?$/, '');
+    return fn.noext(); //fn.replace(/\.[^.]*?$/, '');
 };
 function justPathname(fn) {
     //return fn.replace(/(.*)\\.*?$/, '$1');
-    return path.dirname(fn);
+    return fn.justPathname();
 }
 String.prototype.fullFn = function (fn) {
     if (!fn) return adapter.config.rootDir.fullFn(this);
@@ -65,6 +61,7 @@ String.prototype.noext = function () {
 String.prototype.justPathname = function () {
     //return this.replace(/(.*)\\.*?$/, '$1');
     //return this.replace(/\\[^\\]*?$/, '');
+    if (this.noext() === this) return this;
     return path.dirname(this);
 };
 String.prototype.withoutRoot = function () {
@@ -740,7 +737,7 @@ function checkJavascriptAdapter(callback) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function normalizeConfig(config) {
-    config.rootDir = path.dirname(config.rootDir); //.remove(/\\$/);
+    config.rootDir = config.rootDir; //.remove(/\\$/);
     if (config.port === undefined) config.port = 21;
     if (config.useGlobalScriptAsPrefix === undefined) config.useGlobalScriptAsPrefix = true;
     if (config.restartScript === undefined) config.restartScript = true;
@@ -751,7 +748,7 @@ function normalizeConfig(config) {
 function watchLog () {
     if (!adapter.config.ioBrokerRootdir) return;
     let date = new Date();
-    let fn = path.join(path.dirname(adapter.config.ioBrokerRootdir), 'log', soef.sprintf('iobroker.%d-%02d-%02d.log', date.getFullYear(), date.getMonth()+1, date.getDate()));
+    let fn = path.join(adapter.config.ioBrokerRootdir, 'log', soef.sprintf('iobroker.%d-%02d-%02d.log', date.getFullYear(), date.getMonth()+1, date.getDate()));
 
     fs.watchFile(fn, (curr, prev) => {
         copyLog();
