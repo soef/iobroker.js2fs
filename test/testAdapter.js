@@ -154,7 +154,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 }
             }
         };
-
+        console.log('START NOW');
         setup.startAdapter(objects, states, function () {
             checkConnectionOfAdapter(function (res) {
                 if (res) console.log(res);
@@ -171,6 +171,21 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         if (Object.keys(changedObjects).length === 2 && connectionChecked) {
                             onObjectChanged = null;
                             done();
+                        }
+                        else {
+                            setTimeout(function() {
+                                objects.getObject('script.js.global.TestGlobal', function(err, obj) {
+                                    expect(err).to.be.ok;
+                                    expect(obj.mtime).not.to.be.undefined;
+                                    objects.getObject('script.js.tests.TestScript1', function(err, obj) {
+                                        expect(err).to.be.ok;
+                                        expect(obj.mtime).not.to.be.undefined;
+                                        expect(connectionChecked).to.be.true;
+                                        onObjectChanged = null;
+                                        done();
+                                    });
+                                });
+                            }, 5000);
                         }
                     });
             });
@@ -201,7 +216,22 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             done();
         };
 
-        fs.writeFileSync(scriptFileTest1,scriptContent);
+        objects.getObject('script.js.tests.TestScript1', function(err, obj) {
+            expect(err).to.be.ok;
+            expect(obj.mtime).not.to.be.undefined;
+
+            fs.writeFileSync(scriptFileTest1,scriptContent);
+            setTimeout(function() {
+                objects.getObject('script.js.tests.TestScript1', function(err, obj2) {
+                    expect(err).to.be.ok;
+                    expect(obj2.mtime).not.to.be.undefined;
+                    expect(obj2.mtime).not.to.be.equal(obj.mtime);
+                    onObjectChanged = null;
+                    done();
+                });
+            }, 5000);
+        });
+
     });
 
     it('Test ' + adapterShortName + ' adapter: create TestScript 2', function (done) {
@@ -220,6 +250,14 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         };
 
         fs.writeFileSync(scriptFileTest2,scriptContent);
+        setTimeout(function() {
+            objects.getObject('script.js.tests.TestScript2', function(err, obj) {
+                expect(err).to.be.ok;
+                expect(obj.mtime).not.to.be.undefined;
+                onObjectChanged = null;
+                done();
+            });
+        }, 5000);
     });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
