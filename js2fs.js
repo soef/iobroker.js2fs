@@ -9,6 +9,7 @@ const
     soef = require('soef'),
     path = require('path'),
     fs = require('fs'),
+    chokidar = require('chokidar');
     child_process = require('child_process')
 ;
 
@@ -544,8 +545,11 @@ let watcher = {
     run: function () {
         let self = this;
         this.close();
-        this.handle = fs.watch(adapter.config.rootDir, { recursive: true }, function (eventType, filename) {
-
+        //this.handle = fs.watch(adapter.config.rootDir, { recursive: true }, function (eventType, filename) {
+        this.handle = chokidar.watch(adapter.config.rootDir, {
+            ignored: /(^|[\/\\])\../,
+            persistent: true
+        }). on('all', function (eventType, filename, details) {
             if (self.cnt) {
                 self.cnt -= 1;
                 adapter.log.debug('watch: event ignored! cnt=' + self.cnt + ' - ' + eventType + ' - ' + filename);
@@ -603,7 +607,7 @@ let watcher = {
                         break;
                 }
             }
-        });
+        }
     },
     restart: this.run,
 };
