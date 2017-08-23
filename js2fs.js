@@ -556,7 +556,7 @@ let watcher = {
                 return;
             }
 
-            if (eventType === 'add' || eventType === 'addDir') {
+            if (eventType === 'addDir') {
                 console.log('watch: ' + eventType + ' - ' + filename + ' type ignored');
                 return;
             }
@@ -566,13 +566,19 @@ let watcher = {
                 return;
             }
             console.log ('watch: ' + eventType + ' - ' + filename);
-            filename = path.sep + filename;
-            let fullfn = adapter.config.rootDir.fullFn (filename);
+
+            let fullfn = filename;
+            if (filename.indexOf(adapter.config.rootDir) === 0) filename = filename.substring(adapter.config.rootDir.length);
+            if (filename[0] !== path.sep) filename = path.sep + filename;
             let file = getFileObject(fullfn);
             if (!file || file.source === false) {
                 //return scripts.delete(filename);
             } else {
                 let obj = scripts.fn2obj(filename);
+                if (obj && eventType === 'add') {
+                    console.log('watch: ' + eventType + ' - ' + filename + ' ignored, because already exists');
+                    return;
+                }
                 let cmd = (file.source.match(/^[\/\s]*!!([\S]*)/) || []) [1] || 0;
                 let ar = cmd.match(/^(.*?)=(.*?)$/);
                 if (ar && ar[1]) cmd = ar[1];
@@ -607,6 +613,7 @@ let watcher = {
                         break;
 
                     default:
+                        adapter.log.debug('file changed ' + filename);
                         scripts.change(filename, file.source, file.mtime);
                         break;
                 }
