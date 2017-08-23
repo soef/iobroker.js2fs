@@ -75,7 +75,7 @@ String.prototype.toFn = String.prototype.toFilename = String.prototype.id2fn = f
     let ext = reSettings.test(this) ? '.json' : '.js';
     let fn = this.remove(reScriptJsDot);
     let fnArr = fn.split('.');
-    fn = path.join(fnArr); //.replace(/\./g, '\\');
+    fn = pathJoinArr(fnArr); //.replace(/\./g, '\\');
     //let ret = adapter.config.rootDir.fullFn(this.remove(reScriptJsDot).replace(/\./g, '\\'));
     //ret += '.js';
     return adapter.config.rootDir.fullFn(fn + ext);
@@ -85,6 +85,14 @@ Date.prototype.getUnixTime = Date.prototype.getCTime = function () {
     //return parseInt(this.getTime() / 1000);
     return ~~(this.getTime() / 1000);
 };
+
+function pathJoinArr(arr) {
+    let res = '';
+    arr.forEach(function(element) {
+        res = path.join(res, element);
+    });
+    return res;
+}
 
 let adapter = soef.Adapter(
     main,
@@ -265,7 +273,7 @@ let Scripts = function () {
             function buildFilename(o) {
                 let fn = o.id.remove(reScriptJsDot);
                 let fnArr = fn.split('.');
-                return path.sep + path.join(fnArr) + ext(o);
+                return path.sep + pathJoinArr(fnArr) + ext(o);
             }
 
             function add(o) {
@@ -742,7 +750,7 @@ function normalizeConfig(config) {
 function watchLog () {
     if (!adapter.config.ioBrokerRootdir) return;
     let date = new Date();
-    let fn = path.join(path.dirname(adapter.config.ioBrokerRootdir),'log', soef.sprintf('iobroker.%d-%02d-%02d.log', date.getFullYear(), date.getMonth()+1, date.getDate()));
+    let fn = path.join(path.dirname(adapter.config.ioBrokerRootdir), 'log', soef.sprintf('iobroker.%d-%02d-%02d.log', date.getFullYear(), date.getMonth()+1, date.getDate()));
 
     fs.watchFile(fn, (curr, prev) => {
         copyLog();

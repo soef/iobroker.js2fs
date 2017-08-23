@@ -148,7 +148,10 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (id.substring(0,10) === 'script.js.') {
                 console.log('Go Object-Modification for ' + id);
                 changedObjects[id] = true;
-                if (Object.keys(changedObjects).length === 2) done();
+                if (Object.keys(changedObjects).length === 2) {
+                    onObjectChanged = null;
+                    done();
+                }
             }
         };
 
@@ -163,18 +166,57 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 },
                 function () {
                     states.subscribeMessage('system.adapter.test.0');
-                    if (Object.keys(changedObjects).length === 2) done();
+                    if (Object.keys(changedObjects).length === 2) {
+                        onObjectChanged = null;
+                        done();
+                    }
                 });
         });
     });
 
-    it('Test ' + adapterShortName + ' adapter: Check that file got created', function (done) {
+    it('Test ' + adapterShortName + ' adapter: Check that js files got created', function (done) {
         this.timeout(60000);
         var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
         expect(fs.readFileSync(scriptFileTest1)).to.be.equal("console.log('Test Script 1');");
         done();
+    });
+
+    it('Test ' + adapterShortName + ' adapter: update TestScript 1', function (done) {
+        this.timeout(60000);
+        var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
+        var scriptContent = "console.log('Test Script 1 - NEW');";
+
+        onObjectChanged = function (id, obj) {
+            console.log('Go Object-Modification for ' + id);
+            if (id !== 'script.js.tests.TestScript1') return;
+
+            expect(obj.common.source).to.be.equal(scriptContent);
+            expect(new Date().getUnixTime()-obj.common.mtime).to.be.less(10);
+            onObjectChanged = null;
+            done();
+        };
+
+        fs.writeFileSync(scriptFileTest1,scriptContent);
+    });
+
+    it('Test ' + adapterShortName + ' adapter: create TestScript 2', function (done) {
+        this.timeout(60000);
+        var scriptFileTest2 = path.join(scriptDir,'tests','TestScript2') + '.js';
+        var scriptContent = "console.log('Test Script 2');";
+
+        onObjectChanged = function (id, obj) {
+            console.log('Go Object-Modification for ' + id);
+            if (id !== 'script.js.tests.TestScript2') return;
+
+            expect(obj.common.source).to.be.equal(scriptContent);
+            expect(new Date().getUnixTime()-obj.common.mtime).to.be.less(10);
+            onObjectChanged = null;
+            done();
+        };
+
+        fs.writeFileSync(scriptFileTest1,scriptContent);
     });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
