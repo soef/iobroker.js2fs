@@ -229,6 +229,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 objects.getObject('script.js.tests.TestScript1', function(err, obj2) {
                     console.log(JSON.stringify(obj2));
                     expect(err).to.be.null;
+                    expect(obj2.common.source).to.be.equal(scriptContent);
                     expect(obj2.common.mtime).not.to.be.undefined;
                     expect(obj2.common.mtime).not.to.be.equal(obj.common.mtime);
                     onObjectChanged = null;

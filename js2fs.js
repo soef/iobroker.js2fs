@@ -305,6 +305,7 @@ let Scripts = function () {
     let getmtime = function (fn, common) {
         let stat = soef.lstatSync(adapter.config.rootDir.fullFn(fn));
         if (stat && stat.mtime) {
+            adapter.log.debug('get mtime: ' + stat.mtime);
             common.mtime = stat.mtime;
         }
     };
