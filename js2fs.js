@@ -9,7 +9,7 @@ const
     soef = require('soef'),
     path = require('path'),
     fs = require('fs'),
-    chokidar = require('chokidar');
+    chokidar = require('chokidar'),
     child_process = require('child_process')
 ;
 
