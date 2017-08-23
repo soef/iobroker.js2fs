@@ -282,7 +282,7 @@ let Scripts = function () {
 
             scripts.forEach(function (o, i) {
                 let id, path;
-                id = o.id.noext(); //replace(/(.*)\..*?$/, '$1');
+                id = o.id; //replace(/(.*)\..*?$/, '$1');
                 o.fn = o.fn || buildFilename(o); //o.id.replace(reScriptJs, '').replace(/\./g, '\\') + '.js';
                 path = o.fn; //id.replace(reScriptJs, '').replace(/\./g, '\\') || '\\';
                 add(o);
