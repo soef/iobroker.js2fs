@@ -607,7 +607,7 @@ let watcher = {
                         break;
                 }
             }
-        }
+        });
     },
     restart: this.run,
 };
