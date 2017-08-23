@@ -581,7 +581,7 @@ let watcher = {
                 }
                 let cmdRes = file.source.match(/^[\/\s]*!!([\S]*)/);
                 let cmd = '';
-                if (cmdRes[1]) cmd = cmdRes[1];
+                if (cmdRes && cmdRes[1]) cmd = cmdRes[1];
                 let ar = cmd.match(/^(.*?)=(.*?)$/);
                 if (ar && ar[1]) cmd = ar[1];
                 switch (cmd) {
