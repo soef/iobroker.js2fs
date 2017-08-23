@@ -84,7 +84,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         setup.setupController(function () {
             var config = setup.getAdapterConfig();
             // enable adapter
-            config.common.enabled  = false;
+            config.common.enabled  = true;
             config.common.loglevel = 'debug';
 
             fs.mkdirSync(scriptDir);
@@ -100,7 +100,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             function (_objects, _states) {
                 objects = _objects;
                 states  = _states;
-                states.subscribe('*');
                 var script = {
                     "common": {
                         "name":         "Global Script",

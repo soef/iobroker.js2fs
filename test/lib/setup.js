@@ -450,6 +450,11 @@ function setupController(cb) {
 }
 
 function startAdapter(objects, states, callback) {
+    if (adapterStarted) {
+        console.log('Adapter already started ...');
+        if (callback) callback(objects, states);
+    }
+    adapterStarted = true;
     console.log('startAdapter...');
     if (fs.existsSync(rootDir + 'tmp/node_modules/' + pkg.name + '/' + pkg.main)) {
         try {
@@ -485,6 +490,7 @@ function startController(isStartAdapter, onObjectChange, onStateChange, callback
         callback  = onObjectChange;
         onObjectChange = undefined;
     }
+    var adapterStarted = false;
 
     if (pid) {
         console.error('Controller is already started!');
