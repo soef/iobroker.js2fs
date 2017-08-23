@@ -579,7 +579,7 @@ let watcher = {
                     console.log('watch: ' + eventType + ' - ' + filename + ' ignored, because already exists');
                     return;
                 }
-                let cmd = (file.source.match(/^[\/\s]*!!([\S]*)/) || []) [1] || 0;
+                let cmd = (file.source.match(/^[\/\s]*!!([\S]*)/) || []) [1] || [0];
                 let ar = cmd.match(/^(.*?)=(.*?)$/);
                 if (ar && ar[1]) cmd = ar[1];
                 switch (cmd) {
