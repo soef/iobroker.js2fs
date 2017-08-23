@@ -1,6 +1,8 @@
 /* jshint -W097 */// jshint strict:false
 /*jslint node: true */
 var expect = require('chai').expect;
+var path = require('path');
+var fs = require('fs');
 var setup  = require(__dirname + '/lib/setup');
 
 var objects = null;
@@ -10,6 +12,8 @@ var onObjectChanged = null;
 var sendToID = 1;
 
 var adapterShortName = setup.adapterName.substring(setup.adapterName.indexOf('.')+1);
+
+var scriptDir = path.join(__dirname, 'myScripts');
 
 function checkConnectionOfAdapter(cb, counter) {
     counter = counter || 0;
@@ -83,18 +87,54 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
 
-            //config.native.dbtype   = 'sqlite';
+            fs.mkdirSync(scriptDir);
+            config.native.rootDir   = scriptDir;
 
             setup.setAdapterConfig(config.common, config.native);
 
-            setup.startController(true, function(id, obj) {}, function (id, state) {
+            setup.startController(false, function (id, obj) {
+                    if (onObjectChanged) onObjectChanged(id, obj);
+                }, function (id, state) {
                     if (onStateChanged) onStateChanged(id, state);
-                },
-                function (_objects, _states) {
-                    objects = _objects;
-                    states  = _states;
-                    _done();
+            },
+            function (_objects, _states) {
+                objects = _objects;
+                states  = _states;
+                states.subscribe('*');
+                var script = {
+                    "common": {
+                        "name":         "Global Script",
+                        "engineType":   "Javascript/js",
+                        "source":       "console.log('Global');",
+                        "enabled":      true,
+                        "engine":       "system.adapter.javascript.0"
+                    },
+                    "type":             "script",
+                    "_id":              "script.js.global.TestGlobal",
+                    "native": {}
+                };
+                objects.setObject(script._id, script, function (err) {
+                    expect(err).to.be.not.ok;
+                    script = {
+                        "common": {
+                            "name": "Test Script 1",
+                            "engineType": "Javascript/js",
+                            "source": "console.log('Test Script 1');",
+                            "enabled": true,
+                            "engine": "system.adapter.javascript.0"
+                        },
+                        "type": "script",
+                        "_id": "script.js.tests.TestScript1",
+                        "native": {}
+                    };
+                    objects.setObject(script._id, script, function (err) {
+                        expect(err).to.be.not.ok;
+                        setup.startAdapter(objects, states, function () {
+                            _done();
+                        });
+                    });
                 });
+            });
         });
     });
 
@@ -103,6 +143,15 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 */
     it('Test ' + adapterShortName + ' adapter: Check if adapter started', function (done) {
         this.timeout(60000);
+        var changedObjects = {};
+        onObjectChanged = function (id, obj) {
+            if (id.substring(0,10) === 'script.js.') {
+                console.log('Go Object-Modification for ' + id);
+                changedObjects[id] = true;
+                if (Object.keys(changedObjects).length === 2) done();
+            }
+        };
+
         checkConnectionOfAdapter(function (res) {
             if (res) console.log(res);
             expect(res).not.to.be.equal('Cannot check connection');
@@ -114,20 +163,15 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 },
                 function () {
                     states.subscribeMessage('system.adapter.test.0');
-                    done();
+                    if (Object.keys(changedObjects).length === 2) done();
                 });
         });
     });
-/**/
 
-/*
-    PUT YOUR OWN TESTS HERE USING
-    it('Testname', function ( done) {
-        ...
+    it('Test ' + adapterShortName + ' adapter: Check that file got created', function (done) {
+        this.timeout(60000);
+        if (fs.existsSync(path.join(scriptDir,'tests','TestScript1') + '.js')) done();
     });
-
-    You can also use "sendTo" method to send messages to the started adapter
-*/
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
         this.timeout(10000);
