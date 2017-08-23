@@ -128,9 +128,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                     };
                     objects.setObject(script._id, script, function (err) {
                         expect(err).to.be.not.ok;
-                        setup.startAdapter(objects, states, function () {
-                            _done();
-                        });
+                        _done();
                     });
                 });
             });
@@ -140,36 +138,40 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 /*
     ENABLE THIS WHEN ADAPTER RUNS IN DEAMON MODE TO CHECK THAT IT HAS STARTED SUCCESSFULLY
 */
-    it('Test ' + adapterShortName + ' adapter: Check if adapter started', function (done) {
+    it('Test ' + adapterShortName + ' adapter: start adapter and Check if adapter started', function (done) {
         this.timeout(60000);
         var changedObjects = {};
+        var connectionChecked = false;
         onObjectChanged = function (id, obj) {
             console.log('Go Object-Modification for ' + id);
             if (id.substring(0,10) === 'script.js.') {
                 changedObjects[id] = true;
-                if (Object.keys(changedObjects).length === 2) {
+                if (Object.keys(changedObjects).length === 2 && connectionChecked) {
                     onObjectChanged = null;
                     done();
                 }
             }
         };
 
-        checkConnectionOfAdapter(function (res) {
-            if (res) console.log(res);
-            expect(res).not.to.be.equal('Cannot check connection');
-            objects.setObject('system.adapter.test.0', {
-                    common: {
+        setup.startAdapter(objects, states, function () {
+            checkConnectionOfAdapter(function (res) {
+                if (res) console.log(res);
+                expect(res).not.to.be.equal('Cannot check connection');
+                objects.setObject('system.adapter.test.0', {
+                        common: {
 
+                        },
+                        type: 'instance'
                     },
-                    type: 'instance'
-                },
-                function () {
-                    states.subscribeMessage('system.adapter.test.0');
-                    if (Object.keys(changedObjects).length === 2) {
-                        onObjectChanged = null;
-                        done();
-                    }
-                });
+                    function () {
+                        states.subscribeMessage('system.adapter.test.0');
+                        connectionChecked = true;
+                        if (Object.keys(changedObjects).length === 2 && connectionChecked) {
+                            onObjectChanged = null;
+                            done();
+                        }
+                    });
+            });
         });
     });
 
