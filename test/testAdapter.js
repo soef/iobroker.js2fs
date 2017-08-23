@@ -170,7 +170,11 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: Check that file got created', function (done) {
         this.timeout(60000);
-        if (fs.existsSync(path.join(scriptDir,'tests','TestScript1') + '.js')) done();
+        var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
+        expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
+        expect(fs.existsSync(scriptFileTest1)).to.be.true;
+        expect(fs.readFileSync(scriptFileTest1)).to.be.equal("console.log('Test Script 1');");
+        done();
     });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
