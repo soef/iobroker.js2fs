@@ -84,7 +84,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         setup.setupController(function () {
             var config = setup.getAdapterConfig();
             // enable adapter
-            config.common.enabled  = true;
+            config.common.enabled  = false;
             config.common.loglevel = 'debug';
 
             fs.mkdirSync(scriptDir);
@@ -216,7 +216,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             done();
         };
 
-        fs.writeFileSync(scriptFileTest1,scriptContent);
+        fs.writeFileSync(scriptFileTest2,scriptContent);
     });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {

@@ -46,7 +46,8 @@ function justPathname(fn) {
 String.prototype.fullFn = function (fn) {
     if (!fn) return adapter.config.rootDir.fullFn(this);
     //if (/^\\\\|^.\:\\/.test(fn) || fn.substring(0,1) === '/') return fn;
-    if (path.isAbsolute(fn)) return fn;
+    //if (path.isAbsolute(fn)) return fn;
+    if (fn.substring(adapter.config.rootDir) === 0) return fn;
     return path.normalize(path.join(this, fn)); // (this + '\\' + fn).replace(/[\\]{2,}/g, '\\');
 };
 String.prototype.remove = function (regex) {
