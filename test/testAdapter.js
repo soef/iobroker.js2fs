@@ -175,11 +175,13 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         else {
                             setTimeout(function() {
                                 objects.getObject('script.js.global.TestGlobal', function(err, obj) {
+                                    console.log(JSON.stringofy(obj));
                                     expect(err).to.be.null;
-                                    expect(obj.mtime).not.to.be.undefined;
+                                    expect(obj.common.mtime).not.to.be.undefined;
                                     objects.getObject('script.js.tests.TestScript1', function(err, obj) {
+                                        console.log(JSON.stringofy(obj));
                                         expect(err).to.be.null;
-                                        expect(obj.mtime).not.to.be.undefined;
+                                        expect(obj.common.mtime).not.to.be.undefined;
                                         expect(connectionChecked).to.be.true;
                                         onObjectChanged = null;
                                         done();
@@ -217,15 +219,17 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         };
 
         objects.getObject('script.js.tests.TestScript1', function(err, obj) {
-            expect(err).to.be.ok;
-            expect(obj.mtime).not.to.be.undefined;
+            console.log(JSON.stringofy(obj));
+            expect(err).to.be.null;
+            expect(obj.common.mtime).not.to.be.undefined;
 
             fs.writeFileSync(scriptFileTest1,scriptContent);
             setTimeout(function() {
                 objects.getObject('script.js.tests.TestScript1', function(err, obj2) {
+                    console.log(JSON.stringofy(obj2));
                     expect(err).to.be.null;
-                    expect(obj2.mtime).not.to.be.undefined;
-                    expect(obj2.mtime).not.to.be.equal(obj.mtime);
+                    expect(obj2.common.mtime).not.to.be.undefined;
+                    expect(obj2.common.mtime).not.to.be.equal(obj.common.mtime);
                     onObjectChanged = null;
                     done();
                 });
@@ -252,8 +256,9 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         fs.writeFileSync(scriptFileTest2,scriptContent);
         setTimeout(function() {
             objects.getObject('script.js.tests.TestScript2', function(err, obj) {
+                console.log(JSON.stringofy(obj));
                 expect(err).to.be.null;
-                expect(obj.mtime).not.to.be.undefined;
+                expect(obj.common.mtime).not.to.be.undefined;
                 onObjectChanged = null;
                 done();
             });
