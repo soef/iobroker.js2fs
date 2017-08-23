@@ -223,6 +223,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             expect(err).to.be.null;
             expect(obj.common.mtime).not.to.be.undefined;
 
+            console.log('CHANGE Local File TestScript1');
             fs.writeFileSync(scriptFileTest1,scriptContent);
             setTimeout(function() {
                 objects.getObject('script.js.tests.TestScript1', function(err, obj2) {
@@ -253,6 +254,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             done();
         };
 
+        console.log('CREATE Local File TestScript2');
         fs.writeFileSync(scriptFileTest2,scriptContent);
         setTimeout(function() {
             objects.getObject('script.js.tests.TestScript2', function(err, obj) {

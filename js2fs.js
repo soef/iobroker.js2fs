@@ -556,6 +556,10 @@ let watcher = {
                 return;
             }
 
+            if (eventType === 'add' || eventType === 'addDir') {
+                console.log('watch: ' + eventType + ' - ' + filename + ' type ignored');
+                return;
+            }
             //jetbrians temp filename: \global\Global_global.js___jb_tmp___
             if (!filename || !/\.js$|\.json$/.test(filename)) {
                 console.log('watch: ' + eventType + ' - ' + filename + ' ignored');
