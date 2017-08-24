@@ -145,7 +145,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var changedObjects = {};
         var connectionChecked = false;
         onObjectChanged = function (id, obj) {
-            console.log('Got Object-Modification for ' + id);
+            console.log('Got initial Object-Modification for ' + id);
             if (id.substring(0,10) === 'script.js.') {
                 expect(obj.common.mtime).not.to.be.undefined;
                 changedObjects[id] = true;
@@ -172,23 +172,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                             onObjectChanged = null;
                             done();
                         }
-                        /*else {
-                            setTimeout(function() {
-                                objects.getObject('script.js.global.TestGlobal', function(err, obj) {
-                                    console.log(JSON.stringify(obj));
-                                    expect(err).to.be.null;
-                                    expect(obj.common.mtime).not.to.be.undefined;
-                                    objects.getObject('script.js.tests.TestScript1', function(err, obj) {
-                                        console.log(JSON.stringify(obj));
-                                        expect(err).to.be.null;
-                                        expect(obj.common.mtime).not.to.be.undefined;
-                                        expect(connectionChecked).to.be.true;
-                                        onObjectChanged = null;
-                                        done();
-                                    });
-                                });
-                            }, 5000);
-                        }*/
                     });
             });
         });
@@ -207,40 +190,29 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         this.timeout(60000);
         var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
         var scriptContent = "console.log('Test Script 1 - NEW');";
+        var initObj = null;
+
+        onObjectChanged = function (id, obj2) {
+            console.log('Got Object-Modification on update for ' + id);
+            if (id !== 'script.js.tests.TestScript1') return;
+
+            expect(obj2.common.source).to.be.equal(scriptContent);
+            expect(obj2.common.mtime).not.to.be.undefined;
+            expect(((new Date().getTime()/1000)-obj2.common.mtime)<10).to.be.true;
+            expect(obj2.common.mtime).not.to.be.equal(initObj.common.mtime);
+            onObjectChanged = null;
+            done();
+        };
 
         objects.getObject('script.js.tests.TestScript1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
             expect(obj.common.mtime).not.to.be.undefined;
-
-            onObjectChanged = function (id, obj2) {
-                console.log('Got Object-Modification for ' + id);
-                if (id !== 'script.js.tests.TestScript1') return;
-
-                expect(obj2.common.source).to.be.equal(scriptContent);
-                expect(obj2.common.mtime).not.to.be.undefined;
-                expect(((new Date().getTime()/1000)-obj2.common.mtime)<10).to.be.true;
-                expect(obj2.common.mtime).not.to.be.equal(obj.common.mtime);
-                onObjectChanged = null;
-                done();
-            };
+            initObj = obj;
 
             console.log('CHANGE Local File TestScript1');
             fs.writeFileSync(scriptFileTest1, scriptContent);
-            /*setTimeout(function() {
-                objects.getObject('script.js.tests.TestScript1', function(err, obj2) {
-                    console.log(JSON.stringify(obj2));
-                    expect(err).to.be.null;
-                    expect(obj2.common.source).to.be.equal(scriptContent);
-                    expect(obj2.common.mtime).not.to.be.undefined;
-                    expect(obj2.common.mtime).not.to.be.equal(obj.common.mtime);
-                    expect(new Date().getUnixTime()-obj.common.mtime).to.be.less(10);
-                    onObjectChanged = null;
-                    done();
-                });
-            }, 5000);*/
         });
-
     });
 
     it('Test ' + adapterShortName + ' adapter: create TestScript 2', function (done) {
@@ -249,7 +221,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var scriptContent = "console.log('Test Script 2');";
 
         onObjectChanged = function (id, obj) {
-            console.log('Go Object-Modification for ' + id);
+            console.log('Got Object-Modification on create for ' + id);
             if (id !== 'script.js.tests.TestScript2') return;
 
             expect(obj.common.source).to.be.equal(scriptContent);
@@ -260,15 +232,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
         console.log('CREATE Local File TestScript2');
         fs.writeFileSync(scriptFileTest2,scriptContent);
-        /*setTimeout(function() {
-            objects.getObject('script.js.tests.TestScript2', function(err, obj) {
-                console.log(JSON.stringify(obj));
-                expect(err).to.be.null;
-                expect(obj.common.mtime).not.to.be.undefined;
-                onObjectChanged = null;
-                done();
-            });
-        }, 5000);*/
     });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
