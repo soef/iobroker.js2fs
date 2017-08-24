@@ -231,16 +231,10 @@ let Scripts = function () {
             endkey: 'script.js.' + '\u9999'
         }, null, function (err, res) {
             if (err || !res || !res.rows) return;
-            let handledScripts = {};
             res.rows.forEach(function (o) {
                 o = o.value;
                 if (o.type !== 'script') return;
 
-                if (handledScripts[o._id]) {
-                    adapter.log.debug('duplicate script returned, ignore: ' + o._id);
-                    return;
-                }
-                handledScripts[o._id] = true;
                 adapter.log.debug('read script ' + o._id);
                 let oo = {
                     isFile: true,
@@ -350,7 +344,7 @@ let Scripts = function () {
         if (!mtime) getmtime(path, obj.common);
         adapter.log.debug('create New Object: ' + id);
         adapter.setForeignObjectNotExists(id, obj, function (err, _obj) {
-            if (!err && _obj) return self.read(callback);
+            //if (!err && _obj) return self.read(callback);
             callback && callback(err);
         });
     };
