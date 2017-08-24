@@ -818,6 +818,6 @@ function main() {
     start();
 
     adapter.subscribeStates('*');
-    adapter.subscribeForeignObjects('script.js.*');
+    adapter.subscribeForeignObjects('*');
     //});
 }
