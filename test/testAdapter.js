@@ -183,7 +183,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
         expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('Test Script 1');");
-        done();
+        setTimeout(done, 2000);
     });
 
     it('Test ' + adapterShortName + ' adapter: update TestScript 1', function (done) {
@@ -201,7 +201,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             expect(((new Date().getTime()/1000)-obj2.common.mtime)<10).to.be.true;
             expect(obj2.common.mtime).not.to.be.equal(initObj.common.mtime);
             onObjectChanged = null;
-            done();
+            setTimeout(done, 2000);
         };
 
         objects.getObject('script.js.tests.TestScript1', function(err, obj) {
@@ -227,7 +227,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             expect(obj.common.source).to.be.equal(scriptContent);
             expect(obj.common.mtime).not.to.be.undefined;
             onObjectChanged = null;
-            done();
+            setTimeout(done, 2000);
         };
 
         console.log('CREATE Local File TestScript2');
