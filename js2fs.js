@@ -710,9 +710,10 @@ function start() {
             /*Object.keys (scripts.fns).forEach ((o) => {
             });*/
             adapter.log.debug('fids: ' + JSON.stringify(fids, null, 2));
+            adapter.log.debug('Final Scripts: ' + JSON.stringify(scripts.scripts, null, 2));
             scripts.scripts.forEach ((o) => {
                 let fo = fids[o.id];
-                adapter.log.debug(' check ' + JSON.stringify(fo) + ' / ' + JSON.stringify(o.common));
+                adapter.log.debug(' check ' + JSON.stringify(fo) + ' / ' + JSON.stringify(o));
                 if (!fo || fo.mtime < o.common.mtime) {
                     let fullfn = adapter.config.rootDir.fullFn (o.fn);
                     writeFile (fullfn, o.common.source, o.common.mtime);
