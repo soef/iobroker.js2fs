@@ -97,7 +97,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
             var scriptFileTest3 = path.join(scriptDir,'tests','TestScript3') + '.js';
             var scriptContent3 = "console.log('Test Script 3 - LOCAL');";
-            fs.writeFileSync(scriptFileTest3,scriptContent1);
+            fs.writeFileSync(scriptFileTest3,scriptContent3);
 
             setup.setAdapterConfig(config.common, config.native);
 
