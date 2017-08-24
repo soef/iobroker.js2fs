@@ -648,11 +648,17 @@ function start() {
         var self = this;
         function checkOneFile(i, callback) {
             if (i == files.length) {
-                if (rescanRequired) start();
-                    else if (callback) callback();
+                adapter.log.debug('processed all ' + i + ' files, rescan:' + rescanRequired);
+                if (rescanRequired) {
+                    setTimeout(start, 0);
+                }
+                else if (callback) {
+                    callback();
+                }
                 return;
             }
             let o = files[i];
+            adapter.log.debug('processed file ' + i + ': ' + o.fn);
             fids[o.id] = o;
             let obj = scripts.fn2obj (o.fn);
             if (!obj) {
@@ -665,14 +671,11 @@ function start() {
                             checkOneFile(i++, callback);
                         }, 0);
                     });
+                    return;
                 }
                 else {
                     adapter.log.error('unable to initialize new file ' + o.fn);
-                    setTimeout(function() {
-                        checkOneFile(i++, callback);
-                    }, 0);
                 }
-                return;
             }
             else if (obj.common.source !== o.source) {
                 if (obj.common.mtime < o.mtime) {
@@ -680,7 +683,12 @@ function start() {
                     adapter.log.debug('file changed locally ' + o.fn);
                     var fileObj = getFileObject(o.fn.fullFn());
                     if (fileObj) {
-                        scripts.change(o.fn, fileObj.source, o.mtime);
+                        scripts.change(o.fn, fileObj.source, o.mtime, function() {
+                            setTimeout(function() {
+                                checkOneFile(i++, callback);
+                            }, 0);
+                        });
+                        return;
                     }
                     else {
                         adapter.log.error('unable to update changed file ' + o.fn);
@@ -696,6 +704,8 @@ function start() {
             }, 0);
         }
 
+        adapter.log.debug('Found Scripts: ' + JSON.stringify(scripts.scripts, null, 2));
+        adapter.log.debug('Found Files: ' + JSON.stringify(files, null, 2));
         checkOneFile(0, function() {
             Object.keys (scripts.fns).forEach ((o) => {
             });
