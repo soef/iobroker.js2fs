@@ -678,7 +678,7 @@ function start() {
                 if (obj.common.mtime < o.mtime) {
                     // File has newer change timestamp then JS-Object
                     adapter.log.debug('file changed locally ' + o.fn);
-                    var fileObj = getFileObject(o.fn.fullfn());
+                    var fileObj = getFileObject(o.fn.fullFn());
                     if (fileObj) {
                         scripts.change(o.fn.fullFn(), fileObj.source, o.mtime);
                     }
