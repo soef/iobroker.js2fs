@@ -93,10 +93,8 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             setup.setAdapterConfig(config.common, config.native);
 
             setup.startController(false, function (id, obj) {
-                    console.log('CHANGE OBJECT ' + id);
                     if (onObjectChanged) onObjectChanged(id, obj);
                 }, function (id, state) {
-                    console.log('CHANGE STATE ' + id);
                     if (onStateChanged) onStateChanged(id, state);
             },
             function (_objects, _states) {
@@ -147,8 +145,9 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var changedObjects = {};
         var connectionChecked = false;
         onObjectChanged = function (id, obj) {
-            console.log('Go Object-Modification for ' + id);
+            console.log('Got Object-Modification for ' + id);
             if (id.substring(0,10) === 'script.js.') {
+                expect(obj.common.mtime).not.to.be.undefined;
                 changedObjects[id] = true;
                 if (Object.keys(changedObjects).length === 2 && connectionChecked) {
                     onObjectChanged = null;
@@ -156,7 +155,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 }
             }
         };
-        console.log('START NOW');
         setup.startAdapter(objects, states, function () {
             checkConnectionOfAdapter(function (res) {
                 if (res) console.log(res);
@@ -174,7 +172,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                             onObjectChanged = null;
                             done();
                         }
-                        else {
+                        /*else {
                             setTimeout(function() {
                                 objects.getObject('script.js.global.TestGlobal', function(err, obj) {
                                     console.log(JSON.stringify(obj));
@@ -190,7 +188,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                                     });
                                 });
                             }, 5000);
-                        }
+                        }*/
                     });
             });
         });
@@ -210,24 +208,26 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
         var scriptContent = "console.log('Test Script 1 - NEW');";
 
-        onObjectChanged = function (id, obj) {
-            console.log('Go Object-Modification for ' + id);
-            if (id !== 'script.js.tests.TestScript1') return;
-
-            expect(obj.common.source).to.be.equal(scriptContent);
-            expect(new Date().getUnixTime()-obj.common.mtime).to.be.less(10);
-            onObjectChanged = null;
-            done();
-        };
-
         objects.getObject('script.js.tests.TestScript1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
             expect(obj.common.mtime).not.to.be.undefined;
 
+            onObjectChanged = function (id, obj2) {
+                console.log('Got Object-Modification for ' + id);
+                if (id !== 'script.js.tests.TestScript1') return;
+
+                expect(obj2.common.source).to.be.equal(scriptContent);
+                expect(obj2.common.mtime).not.to.be.undefined;
+                expect(((new Date().getTime()/1000)-obj2.common.mtime)<10).to.be.true;
+                expect(obj2.common.mtime).not.to.be.equal(obj.common.mtime);
+                onObjectChanged = null;
+                done();
+            };
+
             console.log('CHANGE Local File TestScript1');
-            fs.writeFileSync(scriptFileTest1,scriptContent);
-            setTimeout(function() {
+            fs.writeFileSync(scriptFileTest1, scriptContent);
+            /*setTimeout(function() {
                 objects.getObject('script.js.tests.TestScript1', function(err, obj2) {
                     console.log(JSON.stringify(obj2));
                     expect(err).to.be.null;
@@ -238,7 +238,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                     onObjectChanged = null;
                     done();
                 });
-            }, 5000);
+            }, 5000);*/
         });
 
     });
@@ -253,14 +253,14 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (id !== 'script.js.tests.TestScript2') return;
 
             expect(obj.common.source).to.be.equal(scriptContent);
-            expect((new Date().getTime()/1000)-obj.common.mtime).to.be.less(10);
+            expect(obj.common.mtime).not.to.be.undefined;
             onObjectChanged = null;
             done();
         };
 
         console.log('CREATE Local File TestScript2');
         fs.writeFileSync(scriptFileTest2,scriptContent);
-        setTimeout(function() {
+        /*setTimeout(function() {
             objects.getObject('script.js.tests.TestScript2', function(err, obj) {
                 console.log(JSON.stringify(obj));
                 expect(err).to.be.null;
@@ -268,7 +268,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 onObjectChanged = null;
                 done();
             });
-        }, 5000);
+        }, 5000);*/
     });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
