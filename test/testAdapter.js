@@ -251,7 +251,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (id !== 'script.js.tests.TestScript2') return;
 
             expect(obj.common.source).to.be.equal(scriptContent);
-            expect(new Date().getUnixTime()-obj.common.mtime).to.be.less(10);
+            expect((new Date().getTime()/1000)-obj.common.mtime).to.be.less(10);
             onObjectChanged = null;
             done();
         };
