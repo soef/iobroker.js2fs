@@ -89,6 +89,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
             fs.mkdirSync(scriptDir);
             config.native.rootDir   = scriptDir;
+            fs.mkdirSync(path.join(scriptDir,'tests'));
 
             var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
             var scriptContent1 = "console.log('Test Script 1 - LOCAL');";
