@@ -102,6 +102,8 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             function (_objects, _states) {
                 objects = _objects;
                 states  = _states;
+                states.subscribe("*");
+                objects.subscribe("*");
                 var script = {
                     "common": {
                         "name":         "Global Script",
