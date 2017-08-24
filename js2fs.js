@@ -668,7 +668,7 @@ function start() {
                     self.create(o.fn, fileObj.source, fileObj.mtime, function() {
                         rescanRequired = true;
                         setTimeout(function() {
-                            checkOneFile(i++, callback);
+                            checkOneFile(i+1, callback);
                         }, 0);
                     });
                     return;
@@ -685,7 +685,7 @@ function start() {
                     if (fileObj) {
                         scripts.change(o.fn, fileObj.source, o.mtime, function() {
                             setTimeout(function() {
-                                checkOneFile(i++, callback);
+                                checkOneFile(i+1, callback);
                             }, 0);
                         });
                         return;
@@ -700,7 +700,7 @@ function start() {
                 }
             }
             setTimeout(function() {
-                checkOneFile(i++, callback);
+                checkOneFile(i+1, callback);
             }, 0);
         }
 
