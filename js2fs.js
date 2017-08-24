@@ -305,8 +305,8 @@ let Scripts = function () {
     let getmtime = function (fn, common) {
         let stat = soef.lstatSync(adapter.config.rootDir.fullFn(fn));
         if (stat && stat.mtime) {
-            adapter.log.debug('get mtime: ' + stat.mtime);
-            common.mtime = stat.mtime;
+            adapter.log.debug('get mtime: ' + stat.mtime.getUnixTime());
+            common.mtime = stat.mtime.getUnixTime();
         }
     };
 
@@ -397,9 +397,9 @@ let Scripts = function () {
         }
         soef.modifyObject(id, function (o) {
             o.common.source = source;
-            obj.common.source = source;
-            obj.common.mtime = mtime;
-            if (!mtime) getmtime(fn, o.common);
+            //obj.common.source = source;
+            if (mtime) o.common.mtime = mtime;
+                else getmtime(fn, o.common);
             if (adapter.config.restartScript) {
                 oldEnabled = o.common.enabled;
                 o.common.enabled = false;
@@ -508,7 +508,8 @@ function getFileObject(fn) {
     let stat = soef.lstatSync(fn);
     obj.source = soef.readFileSync(fn);
     if (obj.source) obj.source = obj.source.toString();
-    obj.mtime = stat.mtime;
+    obj.mtime = stat.mtime.getUnixTime();
+    adapter.log.debug('mtime of FileObject ' + stat.mtime);
     return obj;
 }
 
