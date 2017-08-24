@@ -624,7 +624,7 @@ let watcher = {
             }
         });
     },
-    restart: this.run,
+    restart: this.run
 };
 
 
