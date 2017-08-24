@@ -225,6 +225,7 @@ let Scripts = function () {
         let settingsFound, now = new Date().getUnixTime();
         this.globalScript = '';
 
+        adapter.log.debug('Start Script Scan');
         adapter.objects.getObjectList({
             startkey: 'script.js.',
             endkey: 'script.js.' + '\u9999'
