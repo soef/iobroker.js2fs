@@ -574,7 +574,13 @@ let watcher = {
             if (filename[0] !== path.sep) filename = path.sep + filename;
             let file = getFileObject(fullfn);
             if (!file || file.source === false) {
+                adapter.log.debug('watch: ' + eventType + ' - ' + filename + ' ignored, because file not existing ');
+                return;
                 //return scripts.delete(filename);
+            }
+            if (file.source === '') {
+                adapter.log.debug('watch: ' + eventType + ' - ' + filename + ' ignored, because file empty');
+                return;
             } else {
                 let obj = scripts.fn2obj(filename);
                 if (obj && eventType === 'add') {
@@ -650,7 +656,9 @@ function start() {
                 // File exists, but no Javascript object, create
                 this.create(o.fn, o.source, o.mtime, function() {
                     rescanRequired = true;
-                    checkOneFile(i++, callback);
+                    setTimeout(function() {
+                        checkOneFile(i++, callback);
+                    }, 0);
                 });
                 return;
             }
@@ -665,7 +673,9 @@ function start() {
                     adapter.log.debug('object changed in iobroker ' + o.fn);
                 }
             }
-            checkOneFile(i++, callback);
+            setTimeout(function() {
+                checkOneFile(i++, callback);
+            }, 0);
         }
 
         checkOneFile(0, function() {
