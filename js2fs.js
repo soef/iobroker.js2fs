@@ -709,9 +709,10 @@ function start() {
         checkOneFile(0, function() {
             /*Object.keys (scripts.fns).forEach ((o) => {
             });*/
+            adapter.log.debug('fids: ' + JSON.stringify(fids));
             scripts.scripts.forEach ((o) => {
                 let fo = fids[o.id];
-                adapter.log.debug(' check ' + o.id + ': found=' + fo.mtime + ' vs obj=' + o.common.mtime + ', source-diff=' + (fo.source !== o.common.source));
+                adapter.log.debug(' check ' + JSON.stringify(fo) + ' / ' + JSON.stringify(o.common));
                 if (!fo || fo.mtime < o.common.mtime || fo.source !== o.common.source) {
                     let fullfn = adapter.config.rootDir.fullFn (o.fn);
                     writeFile (fullfn, o.common.source, o.common.mtime);
