@@ -232,6 +232,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                     expect(obj2.common.source).to.be.equal(scriptContent);
                     expect(obj2.common.mtime).not.to.be.undefined;
                     expect(obj2.common.mtime).not.to.be.equal(obj.common.mtime);
+                    expect(new Date().getUnixTime()-obj.common.mtime).to.be.less(10);
                     onObjectChanged = null;
                     done();
                 });

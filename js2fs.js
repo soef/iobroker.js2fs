@@ -162,7 +162,7 @@ let Scripts = function () {
         regExGlobalOld = /_global$/,
         regExGlobalNew = /script\.js\.global\./;
 
-    let ids = {}, fns = {}, objs = {}, scripts, self = this;
+    let ids = {}, fns = {}, objs = {}, scripts = [], self = this;
 
     this.globalScript = '';
 
@@ -559,15 +559,15 @@ let watcher = {
             }
 
             if (eventType === 'addDir') {
-                console.log('watch: ' + eventType + ' - ' + filename + ' type ignored');
+                adapter.log.debug('watch: ' + eventType + ' - ' + filename + ' type ignored');
                 return;
             }
             //jetbrians temp filename: \global\Global_global.js___jb_tmp___
             if (!filename || !/\.js$|\.json$/.test(filename)) {
-                console.log('watch: ' + eventType + ' - ' + filename + ' ignored');
+                adapter.log.debug('watch: ' + eventType + ' - ' + filename + ' ignored');
                 return;
             }
-            console.log ('watch: ' + eventType + ' - ' + filename);
+            adapter.log.debug('watch: ' + eventType + ' - ' + filename);
 
             let fullfn = filename;
             if (filename.indexOf(adapter.config.rootDir) === 0) filename = filename.substring(adapter.config.rootDir.length);
@@ -578,7 +578,7 @@ let watcher = {
             } else {
                 let obj = scripts.fn2obj(filename);
                 if (obj && eventType === 'add') {
-                    console.log('watch: ' + eventType + ' - ' + filename + ' ignored, because already exists');
+                    adapter.log.debug('watch: ' + eventType + ' - ' + filename + ' ignored, because already exists');
                     return;
                 }
                 let cmdRes = file.source.match(/^[\/\s]*!!([\S]*)/);
