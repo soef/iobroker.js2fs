@@ -657,7 +657,7 @@ function start() {
             let obj = scripts.fn2obj (o.fn);
             if (!obj) {
                 // File exists, but no Javascript object, create
-                var fileObj = getFileObject(o.fn.fullfn());
+                var fileObj = getFileObject(o.fn.fullFn());
                 if (fileObj) {
                     self.create(o.fn, fileObj.source, fileObj.mtime, function() {
                         rescanRequired = true;
@@ -680,7 +680,7 @@ function start() {
                     adapter.log.debug('file changed locally ' + o.fn);
                     var fileObj = getFileObject(o.fn.fullFn());
                     if (fileObj) {
-                        scripts.change(o.fn.fullFn(), fileObj.source, o.mtime);
+                        scripts.change(o.fn, fileObj.source, o.mtime);
                     }
                     else {
                         adapter.log.error('unable to update changed file ' + o.fn);
