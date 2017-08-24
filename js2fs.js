@@ -645,7 +645,6 @@ function start() {
         let fids = {};
         let rescanRequired = false;
 
-        var self = this;
         function checkOneFile(i, callback) {
             if (i == files.length) {
                 adapter.log.debug('processed all ' + i + ' files, rescan:' + rescanRequired);
@@ -665,7 +664,7 @@ function start() {
                 // File exists, but no Javascript object, create
                 var fileObj = getFileObject(o.fn.fullFn());
                 if (fileObj) {
-                    self.create(o.fn, fileObj.source, fileObj.mtime, function() {
+                    scripts.create(o.fn, fileObj.source, fileObj.mtime, function() {
                         rescanRequired = true;
                         setTimeout(function() {
                             checkOneFile(i+1, callback);
