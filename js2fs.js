@@ -630,7 +630,9 @@ let watcher = {
             }
         });
     },
-    restart: this.run,
+    restart: function() {
+        this.run();
+    }
 };
 
 
@@ -643,6 +645,7 @@ function start() {
         let fids = {};
         let rescanRequired = false;
 
+        var self = this;
         function checkOneFile(i, callback) {
             if (i == files.length) {
                 if (rescanRequired) start();
@@ -654,19 +657,34 @@ function start() {
             let obj = scripts.fn2obj (o.fn);
             if (!obj) {
                 // File exists, but no Javascript object, create
-                this.create(o.fn, o.source, o.mtime, function() {
-                    rescanRequired = true;
+                var fileObj = getFileObject(o.fn.fullfn());
+                if (fileObj) {
+                    self.create(o.fn, fileObj.source, fileObj.mtime, function() {
+                        rescanRequired = true;
+                        setTimeout(function() {
+                            checkOneFile(i++, callback);
+                        }, 0);
+                    });
+                }
+                else {
+                    adapter.log.error('unable to initialize new file ' + o.fn);
                     setTimeout(function() {
                         checkOneFile(i++, callback);
                     }, 0);
-                });
+                }
                 return;
             }
             else if (obj.common.source !== o.source) {
                 if (obj.common.mtime < o.mtime) {
                     // File has newer change timestamp then JS-Object
                     adapter.log.debug('file changed locally ' + o.fn);
-                    scripts.change(o.fn, o.source, o.mtime);
+                    var fileObj = getFileObject(o.fn.fullfn());
+                    if (fileObj) {
+                        scripts.change(o.fn.fullFn(), fileObj.source, o.mtime);
+                    }
+                    else {
+                        adapter.log.error('unable to update changed file ' + o.fn);
+                    }
                 }
                 else if (obj.common.mtime > o.mtime) {
                     // File has older timestamp then JS-Object, will be overwritten
