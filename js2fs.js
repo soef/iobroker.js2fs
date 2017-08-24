@@ -632,32 +632,57 @@ function start() {
     adapter.log.debug('start:');
     ignoreObjectChange = true;
     scripts.read(function () {
-        files.length = 0;
+        files = [];
         readAll (adapter.config.rootDir);
         let fids = {};
-        files.forEach ((o) => {
-            fids[o.id] = o;
-            let obj = scripts.fn2obj (o.fn);
-            if (!obj || obj.common.mtime < o.mtime) {
-                //scripts.create();
+        let rescanRequired = false;
+
+        function checkOneFile(i, callback) {
+            if (i == files.length) {
+                if (rescanRequired) start();
+                    else if (callback) callback();
                 return;
             }
-            if (obj.common.mtime > o.mtime) {
+            let o = files[i];
+            fids[o.id] = o;
+            let obj = scripts.fn2obj (o.fn);
+            if (!obj) {
+                // File exists, but no Javascript object, create
+                this.create(o.fn, o.source, o.mtime, function() {
+                    rescanRequired = true;
+                    checkOneFile(i++, callback);
+                });
+                return;
             }
-        });
-        Object.keys (scripts.fns).forEach ((o) => {
-        });
-        scripts.scripts.forEach ((o) => {
-            let fo = fids[o.id];
-            if (!fo || fo.mtime < o.common.mtime) {
-                let fullfn = adapter.config.rootDir.fullFn (o.fn);
-                writeFile (fullfn, o.common.source, o.common.mtime);
+            else if (obj.common.source !== o.source) {
+                if (obj.common.mtime < o.mtime) {
+                    // File has newer change timestamp then JS-Object
+                    adapter.log.debug('file changed locally ' + o.fn);
+                    scripts.change(o.fn, o.source, o.mtime);
+                }
+                else if (obj.common.mtime > o.mtime) {
+                    // File has older timestamp then JS-Object, will be overwritten
+                    adapter.log.debug('object changed in iobroker ' + o.fn);
+                }
             }
+            checkOneFile(i++, callback);
+        }
+
+        checkOneFile(0, function() {
+            Object.keys (scripts.fns).forEach ((o) => {
+            });
+            scripts.scripts.forEach ((o) => {
+                let fo = fids[o.id];
+                if (!fo || fo.mtime < o.common.mtime || fo.source !== o.common.source) {
+                    let fullfn = adapter.config.rootDir.fullFn (o.fn);
+                    writeFile (fullfn, o.common.source, o.common.mtime);
+                }
+            });
+            setTimeout(function() {
+                watcher.run ();
+            }, 1000);
+            ignoreObjectChange = false;
         });
-        setTimeout(function() {
-            watcher.run ();
-        }, 1000);
-        ignoreObjectChange = false;
     });
 }
 
