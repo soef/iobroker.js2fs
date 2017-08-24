@@ -658,7 +658,7 @@ function start() {
                 return;
             }
             let o = files[i];
-            adapter.log.debug('processed file ' + i + ': ' + o.fn);
+            adapter.log.debug('processed file ' + i + ': ' + o.fna);
             fids[o.id] = o;
             let obj = scripts.fn2obj (o.fn);
             if (!obj) {
