@@ -234,6 +234,7 @@ let Scripts = function () {
                 o = o.value;
                 if (o.type !== 'script') return;
 
+                adapter.log.debug('read script ' + o._id);
                 let oo = {
                     isFile: true,
                     isGlobal: isGlobal(o),
@@ -706,10 +707,11 @@ function start() {
         adapter.log.debug('Found Scripts: ' + JSON.stringify(scripts.scripts, null, 2));
         adapter.log.debug('Found Files: ' + JSON.stringify(files, null, 2));
         checkOneFile(0, function() {
-            Object.keys (scripts.fns).forEach ((o) => {
-            });
+            /*Object.keys (scripts.fns).forEach ((o) => {
+            });*/
             scripts.scripts.forEach ((o) => {
                 let fo = fids[o.id];
+                adapter.log.debug(' check ' + o.id + ': found=' + fo.mtime + ' vs obj=' + o.common.mtime + ', source-diff=' + (fo.source !== o.common.source));
                 if (!fo || fo.mtime < o.common.mtime || fo.source !== o.common.source) {
                     let fullfn = adapter.config.rootDir.fullFn (o.fn);
                     writeFile (fullfn, o.common.source, o.common.mtime);
