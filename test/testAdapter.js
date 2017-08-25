@@ -1,6 +1,8 @@
 /* jshint -W097 */// jshint strict:false
 /*jslint node: true */
 var expect = require('chai').expect;
+var path = require('path');
+var fs = require('fs');
 var setup  = require(__dirname + '/lib/setup');
 
 var objects = null;
@@ -10,6 +12,8 @@ var onObjectChanged = null;
 var sendToID = 1;
 
 var adapterShortName = setup.adapterName.substring(setup.adapterName.indexOf('.')+1);
+
+var scriptDir = path.join(__dirname, 'myScripts');
 
 function checkConnectionOfAdapter(cb, counter) {
     counter = counter || 0;
@@ -83,51 +87,152 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
 
-            //config.native.dbtype   = 'sqlite';
+            fs.mkdirSync(scriptDir);
+            config.native.rootDir   = scriptDir;
 
             setup.setAdapterConfig(config.common, config.native);
 
-            setup.startController(true, function(id, obj) {}, function (id, state) {
+            setup.startController(false, function (id, obj) {
+                    if (onObjectChanged) onObjectChanged(id, obj);
+                }, function (id, state) {
                     if (onStateChanged) onStateChanged(id, state);
-                },
-                function (_objects, _states) {
-                    objects = _objects;
-                    states  = _states;
-                    _done();
+            },
+            function (_objects, _states) {
+                objects = _objects;
+                states  = _states;
+                states.subscribe("*");
+                objects.subscribe("*");
+                var script = {
+                    "common": {
+                        "name":         "Global Script",
+                        "engineType":   "Javascript/js",
+                        "source":       "console.log('Global');",
+                        "enabled":      true,
+                        "engine":       "system.adapter.javascript.0"
+                    },
+                    "type":             "script",
+                    "_id":              "script.js.global.TestGlobal",
+                    "native": {}
+                };
+                objects.setObject(script._id, script, function (err) {
+                    expect(err).to.be.not.ok;
+                    script = {
+                        "common": {
+                            "name": "Test Script 1",
+                            "engineType": "Javascript/js",
+                            "source": "console.log('Test Script 1');",
+                            "enabled": true,
+                            "engine": "system.adapter.javascript.0"
+                        },
+                        "type": "script",
+                        "_id": "script.js.tests.TestScript1",
+                        "native": {}
+                    };
+                    objects.setObject(script._id, script, function (err) {
+                        expect(err).to.be.not.ok;
+                        _done();
+                    });
                 });
+            });
         });
     });
 
 /*
     ENABLE THIS WHEN ADAPTER RUNS IN DEAMON MODE TO CHECK THAT IT HAS STARTED SUCCESSFULLY
 */
-    it('Test ' + adapterShortName + ' adapter: Check if adapter started', function (done) {
+    it('Test ' + adapterShortName + ' adapter: start adapter and Check if adapter started', function (done) {
         this.timeout(60000);
-        checkConnectionOfAdapter(function (res) {
-            if (res) console.log(res);
-            expect(res).not.to.be.equal('Cannot check connection');
-            objects.setObject('system.adapter.test.0', {
-                    common: {
-
-                    },
-                    type: 'instance'
-                },
-                function () {
-                    states.subscribeMessage('system.adapter.test.0');
+        var changedObjects = {};
+        var connectionChecked = false;
+        onObjectChanged = function (id, obj) {
+            console.log('Got initial Object-Modification for ' + id);
+            if (id.substring(0,10) === 'script.js.') {
+                expect(obj.common.mtime).not.to.be.undefined;
+                changedObjects[id] = true;
+                if (Object.keys(changedObjects).length === 2 && connectionChecked) {
+                    onObjectChanged = null;
                     done();
-                });
+                }
+            }
+        };
+        setup.startAdapter(objects, states, function () {
+            checkConnectionOfAdapter(function (res) {
+                if (res) console.log(res);
+                expect(res).not.to.be.equal('Cannot check connection');
+                objects.setObject('system.adapter.test.0', {
+                        common: {
+
+                        },
+                        type: 'instance'
+                    },
+                    function () {
+                        states.subscribeMessage('system.adapter.test.0');
+                        connectionChecked = true;
+                        if (Object.keys(changedObjects).length === 2 && connectionChecked) {
+                            onObjectChanged = null;
+                            done();
+                        }
+                    });
+            });
         });
     });
-/**/
 
-/*
-    PUT YOUR OWN TESTS HERE USING
-    it('Testname', function ( done) {
-        ...
+    it('Test ' + adapterShortName + ' adapter: Check that js files got created', function (done) {
+        this.timeout(60000);
+        var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
+        expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
+        expect(fs.existsSync(scriptFileTest1)).to.be.true;
+        expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('Test Script 1');");
+        setTimeout(done, 2000);
     });
 
-    You can also use "sendTo" method to send messages to the started adapter
-*/
+    it('Test ' + adapterShortName + ' adapter: update TestScript 1', function (done) {
+        this.timeout(60000);
+        var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
+        var scriptContent = "console.log('Test Script 1 - NEW');";
+        var initObj = null;
+
+        onObjectChanged = function (id, obj2) {
+            console.log('Got Object-Modification on update for ' + id);
+            if (id !== 'script.js.tests.TestScript1') return;
+
+            expect(obj2.common.source).to.be.equal(scriptContent);
+            expect(obj2.common.mtime).not.to.be.undefined;
+            expect(((new Date().getTime()/1000)-obj2.common.mtime)<10).to.be.true;
+            expect(obj2.common.mtime).not.to.be.equal(initObj.common.mtime);
+            onObjectChanged = null;
+            setTimeout(done, 2000);
+        };
+
+        objects.getObject('script.js.tests.TestScript1', function(err, obj) {
+            console.log(JSON.stringify(obj));
+            expect(err).to.be.null;
+            expect(obj.common.mtime).not.to.be.undefined;
+            initObj = obj;
+
+            console.log('CHANGE Local File TestScript1');
+            fs.writeFileSync(scriptFileTest1, scriptContent);
+        });
+    });
+
+    it('Test ' + adapterShortName + ' adapter: create TestScript 2', function (done) {
+        this.timeout(60000);
+        var scriptFileTest2 = path.join(scriptDir,'tests','TestScript2') + '.js';
+        var scriptContent = "console.log('Test Script 2');";
+
+        onObjectChanged = function (id, obj) {
+            console.log('Got Object-Modification on create for ' + id);
+            if (id !== 'script.js.tests.TestScript2') return;
+
+            expect(obj.common.source).to.be.equal(scriptContent);
+            expect(obj.common.mtime).not.to.be.undefined;
+            onObjectChanged = null;
+            setTimeout(done, 2000);
+        };
+
+        console.log('CREATE Local File TestScript2');
+        fs.writeFileSync(scriptFileTest2,scriptContent);
+    });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
         this.timeout(10000);

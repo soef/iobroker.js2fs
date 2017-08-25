@@ -34,7 +34,8 @@
   "dependencies": {
     "child_process": "^1.0.2",
     "path": "^0.12.7",
-    "soef": "^0.4.4"
+    "soef": "^0.4.4",
+    "chokidar": "^1.7.0"
   },
   "devDependencies": {
     "mocha": "^2.3.4",
