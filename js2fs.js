@@ -224,6 +224,7 @@ let Scripts = function () {
         let settingsFound, now = new Date().getUnixTime();
         this.globalScript = '';
 
+        adapter.log.debug('Start Script Scan');
         adapter.objects.getObjectList({
             startkey: 'script.js.',
             endkey: 'script.js.' + '\u9999'
@@ -233,6 +234,7 @@ let Scripts = function () {
                 o = o.value;
                 if (o.type !== 'script') return;
 
+                adapter.log.debug('read script ' + o._id);
                 let oo = {
                     isFile: true,
                     isGlobal: isGlobal(o),
@@ -353,7 +355,7 @@ let Scripts = function () {
         if (!mtime) getmtime(path, obj.common);
         adapter.log.debug('create New Object: ' + id);
         adapter.setForeignObjectNotExists(id, obj, function (err, _obj) {
-            if (!err && _obj) return self.read(callback);
+            //if (!err && _obj) return self.read(callback);
             callback && callback(err);
         });
     };
@@ -581,12 +583,20 @@ let watcher = {
             if (filename[0] !== path.sep) filename = path.sep + filename;
             let file = getFileObject(fullfn);
             if (!file || file.source === false) {
+<<<<<<< initSync
+                adapter.log.debug('watch: ' + eventType + ' - ' + filename + ' ignored, because file not existing ');
+=======
                 adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because file not existing ');
+>>>>>>> master
                 return;
                 //return scripts.delete(filename);
             }
             if (file.source === '') {
+<<<<<<< initSync
+                adapter.log.debug('watch: ' + eventType + ' - ' + filename + ' ignored, because file empty');
+=======
                 adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because file empty');
+>>>>>>> master
                 return;
             } else {
                 let obj = scripts.fn2obj(filename);
@@ -636,41 +646,52 @@ let watcher = {
             }
         });
     },
-    restart: this.run
+    restart: function() {
+        this.run();
+    }
 };
 
 
-function start() {
+function start(restartCount) {
     adapter.log.debug('start:');
     ignoreObjectChange = true;
     scripts.read(function () {
         files.length = 0;
         readAll (adapter.config.rootDir);
-        let fids = {};
-        files.forEach ((o) => {
-            fids[o.id] = o;
+        let rescanRequired = false, i=files.length-1, fids = {};
+
+        (function doIt() {
+
+            if (i < 0) {
+                if (rescanRequired && !restartCount) {
+                    return setTimeout(start, 0, restartCount+1);
+                }
+                scripts.scripts.forEach ((o) => {
+                    let fo = fids[o.id];
+                    if (!fo || fo.mtime < o.common.mtime) {
+                        let fullfn = adapter.config.rootDir.fullFn (o.fn);
+                        writeFile (fullfn, o.common.source, o.common.mtime);
+                    }
+                });
+                setTimeout(function() {
+                    watcher.run ();
+                }, 1000);
+                ignoreObjectChange = false;
+                return;
+            }
+
+            let o = fids[o.id] = files[i++];
             let obj = scripts.fn2obj (o.fn);
-            if ((!obj || obj.common.mtime < o.mtime) && o.fullfn.endsWith('.js')) {  // at first only files, no directories
-                let fobj = getFileObject(o.fullfn);
-                scripts.change (o.fn, fobj.source, fobj.mtime);
+            if ((!obj || obj.common.mtime < o.mtime) && o.fullfn.endsWith ('.js')) {  // at first only files, no directories
+                if (!obj) rescanRequired = true;
+                let fobj = getFileObject (o.fullfn);
+                scripts.change (o.fn, fobj.source, fobj.mtime, doIt);
+            } else {
+                setTimeout(doIt, 0);
             }
-        });
-        // Object.keys (scripts.fns).forEach ((o) => {
-        // });
-        scripts.scripts.forEach ((o) => {
-            let fo = fids[o.id];
-            if (!fo || fo.mtime < o.common.mtime) {
-                let fullfn = adapter.config.rootDir.fullFn (o.fn);
-                writeFile (fullfn, o.common.source, o.common.mtime);
-            }
-        });
-        setTimeout(function() {
-            watcher.run ();
-        }, 1000);
-        ignoreObjectChange = false;
+        })();
     })
 }
-
 //var windows1252 = require('windows-1252');
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
