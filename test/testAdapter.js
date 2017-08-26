@@ -89,6 +89,15 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
             fs.mkdirSync(scriptDir);
             config.native.rootDir   = scriptDir;
+            fs.mkdirSync(path.join(scriptDir,'tests'));
+
+            var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
+            var scriptContent1 = "console.log('Test Script 1 - LOCAL');";
+            fs.writeFileSync(scriptFileTest1,scriptContent1);
+
+            var scriptFileTest3 = path.join(scriptDir,'tests','TestScript3') + '.js';
+            var scriptContent3 = "console.log('Test Script 3 - LOCAL');";
+            fs.writeFileSync(scriptFileTest3,scriptContent3);
 
             setup.setAdapterConfig(config.common, config.native);
 
@@ -122,7 +131,8 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                             "engineType": "Javascript/js",
                             "source": "console.log('Test Script 1');",
                             "enabled": true,
-                            "engine": "system.adapter.javascript.0"
+                            "engine": "system.adapter.javascript.0",
+                            "mtime": 1
                         },
                         "type": "script",
                         "_id": "script.js.tests.TestScript1",
@@ -149,7 +159,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (id.substring(0,10) === 'script.js.') {
                 expect(obj.common.mtime).not.to.be.undefined;
                 changedObjects[id] = true;
-                if (Object.keys(changedObjects).length === 2 && connectionChecked) {
+                if (Object.keys(changedObjects).length === 3 && connectionChecked) {
                     onObjectChanged = null;
                     done();
                 }
@@ -168,7 +178,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                     function () {
                         states.subscribeMessage('system.adapter.test.0');
                         connectionChecked = true;
-                        if (Object.keys(changedObjects).length === 2 && connectionChecked) {
+                        if (Object.keys(changedObjects).length === 3 && connectionChecked) {
                             onObjectChanged = null;
                             done();
                         }
@@ -182,8 +192,22 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
-        expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('Test Script 1');");
-        setTimeout(done, 2000);
+        expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('Test Script 1 - LOCAL');");
+        objects.getObject('script.js.tests.TestScript1', function(err, obj) {
+            console.log(JSON.stringify(obj));
+            expect(err).to.be.null;
+            expect(obj.common.mtime).not.to.be.equal(1);
+            expect(obj.common.source).to.be.equal("console.log('Test Script 1 - LOCAL');");
+
+            objects.getObject('script.js.tests.TestScript3', function(err, obj) {
+                console.log(JSON.stringify(obj));
+                expect(err).to.be.null;
+                expect(obj.common.mtime).not.to.be.undefined;
+                expect(obj.common.source).to.be.equal("console.log('Test Script 3 - LOCAL');");
+
+                setTimeout(done, 2000);
+            });
+        });
     });
 
     it('Test ' + adapterShortName + ' adapter: update TestScript 1', function (done) {
