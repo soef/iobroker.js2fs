@@ -131,7 +131,7 @@ function deleteFile(id) {
 
 function onObjectChange(id, object) {
     if (soef.lastIdToModify === id || ignoreObjectChange || !reScriptJsDot.test(id)) return;
-    adapter.log.debug('onObjectChange: ' + id + ' object=' + object);
+    adapter.log.debug('onObjectChange: ' + id);
 
     if (id && !object) { // deleted..
         return deleteFile(id);
@@ -373,7 +373,7 @@ let Scripts = function () {
             return this.create (fn, source, mtime, callback);
         }
 
-        //if (!obj.common || obj.common.source === source) return callback && callback();
+        if (!obj.common || (obj.common.source === source && obj.common.mtime === mtime)) return callback && callback();
 
         obj.common.source = source;
         obj.common.mtime = mtime;
@@ -455,20 +455,20 @@ function readAll(startDir) {
     function readAllFiles (rootDir) {
         (soef.readdirSync (rootDir) || []).forEach ((fn) => {
             let fullfn = rootDir.fullFn (fn);
-        let stat = soef.lstatSync (fullfn);
-        if (stat && stat.isDirectory()) {
-            return readAllFiles (fullfn);
-        }
+            let stat = soef.lstatSync (fullfn);
+            if (stat && stat.isDirectory()) {
+                return readAllFiles (fullfn);
+            }
 
-        let oo = {
-            id: fn2id (fullfn.withoutRoot()),
-            fullfn: fullfn,
-            fn: fullfn.substr(startDir.length),
-            mtime: stat.mtime.getUnixTime(),
-            size: stat.size,
-        };
-        files.push (oo);
-    });
+            let oo = {
+                id: fn2id (fullfn.withoutRoot()),
+                fullfn: fullfn,
+                fn: fullfn.substr(startDir.length),
+                mtime: stat.mtime.getUnixTime(),
+                size: stat.size,
+            };
+            files.push (oo);
+        });
     }
 
     readAllFiles(startDir);
@@ -657,11 +657,11 @@ function start(restartCount) {
                 }
                 scripts.scripts.forEach ((o) => {
                     let fo = fids[o.id];
-                if (!fo || fo.mtime < o.common.mtime) {
-                    let fullfn = adapter.config.rootDir.fullFn (o.fn);
-                    writeFile (fullfn, o.common.source, o.common.mtime);
-                }
-            });
+                    if (!fo || fo.mtime < o.common.mtime) {
+                        let fullfn = adapter.config.rootDir.fullFn (o.fn);
+                        writeFile (fullfn, o.common.source, o.common.mtime);
+                    }
+                });
                 setTimeout(function() {
                     watcher.run ();
                 }, 1000);
