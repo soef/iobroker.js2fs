@@ -224,7 +224,6 @@ let Scripts = function () {
         let settingsFound, now = new Date().getUnixTime();
         this.globalScript = '';
 
-        adapter.log.debug('Start Script Scan');
         adapter.objects.getObjectList({
             startkey: 'script.js.',
             endkey: 'script.js.' + '\u9999'
@@ -234,7 +233,6 @@ let Scripts = function () {
                 o = o.value;
                 if (o.type !== 'script') return;
 
-                adapter.log.debug('read script ' + o._id);
                 let oo = {
                     isFile: true,
                     isGlobal: isGlobal(o),
@@ -355,7 +353,7 @@ let Scripts = function () {
         if (!mtime) getmtime(path, obj.common);
         adapter.log.debug('create New Object: ' + id);
         adapter.setForeignObjectNotExists(id, obj, function (err, _obj) {
-            //if (!err && _obj) return self.read(callback);
+            if (!err && _obj) return self.read(callback);
             callback && callback(err);
         });
     };
@@ -457,20 +455,20 @@ function readAll(startDir) {
     function readAllFiles (rootDir) {
         (soef.readdirSync (rootDir) || []).forEach ((fn) => {
             let fullfn = rootDir.fullFn (fn);
-            let stat = soef.lstatSync (fullfn);
-            if (stat && stat.isDirectory()) {
-                return readAllFiles (fullfn);
-            }
+        let stat = soef.lstatSync (fullfn);
+        if (stat && stat.isDirectory()) {
+            return readAllFiles (fullfn);
+        }
 
-            let oo = {
-                id: fn2id (fullfn.withoutRoot()),
-                fullfn: fullfn,
-                fn: fullfn.substr(startDir.length),
-                mtime: stat.mtime.getUnixTime(),
-                size: stat.size,
-            };
-            files.push (oo);
-        });
+        let oo = {
+            id: fn2id (fullfn.withoutRoot()),
+            fullfn: fullfn,
+            fn: fullfn.substr(startDir.length),
+            mtime: stat.mtime.getUnixTime(),
+            size: stat.size,
+        };
+        files.push (oo);
+    });
     }
 
     readAllFiles(startDir);
@@ -480,7 +478,6 @@ function readAll(startDir) {
 function writeFile(fn, data, mtime) {
     adapter.log.debug('writeFile: fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()));
     let filePath = fn.justPathname();
-    adapter.log.debug('writeFile: ' + fn);
     if (!soef.existDirectory(filePath)) {
         let ar = filePath.split (path.sep);
         let s = '';
@@ -583,20 +580,12 @@ let watcher = {
             if (filename[0] !== path.sep) filename = path.sep + filename;
             let file = getFileObject(fullfn);
             if (!file || file.source === false) {
-<<<<<<< initSync
-                adapter.log.debug('watch: ' + eventType + ' - ' + filename + ' ignored, because file not existing ');
-=======
                 adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because file not existing ');
->>>>>>> master
                 return;
                 //return scripts.delete(filename);
             }
             if (file.source === '') {
-<<<<<<< initSync
-                adapter.log.debug('watch: ' + eventType + ' - ' + filename + ' ignored, because file empty');
-=======
                 adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because file empty');
->>>>>>> master
                 return;
             } else {
                 let obj = scripts.fn2obj(filename);
@@ -668,11 +657,11 @@ function start(restartCount) {
                 }
                 scripts.scripts.forEach ((o) => {
                     let fo = fids[o.id];
-                    if (!fo || fo.mtime < o.common.mtime) {
-                        let fullfn = adapter.config.rootDir.fullFn (o.fn);
-                        writeFile (fullfn, o.common.source, o.common.mtime);
-                    }
-                });
+                if (!fo || fo.mtime < o.common.mtime) {
+                    let fullfn = adapter.config.rootDir.fullFn (o.fn);
+                    writeFile (fullfn, o.common.source, o.common.mtime);
+                }
+            });
                 setTimeout(function() {
                     watcher.run ();
                 }, 1000);
@@ -692,6 +681,7 @@ function start(restartCount) {
         })();
     })
 }
+
 //var windows1252 = require('windows-1252');
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
