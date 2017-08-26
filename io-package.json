@@ -6,6 +6,10 @@
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.8": {
+        "en": "misc. changes done by Apollon77",
+        "de": "Verschiedene Änderungen von Apollon77"
+      },
       "0.0.7": {
         "en": "log export added",
         "de": "log export hinzugefügt"
