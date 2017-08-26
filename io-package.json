@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.7",
+    "version": "0.0.9",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.9": {
+        "en": "Bidirectional sync after start, allow spaces in filenames",
+        "de": "Bidirectional sync nach dem Start, Unterstützung von Leerzeichen in Dateinamen"
+      },
       "0.0.8": {
         "en": "misc. changes done by Apollon77",
         "de": "Verschiedene Änderungen von Apollon77"
