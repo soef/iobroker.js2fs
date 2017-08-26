@@ -647,13 +647,13 @@ function start(restartCount) {
     scripts.read(function () {
         files.length = 0;
         readAll (adapter.config.rootDir);
-        let rescanRequired = false, i=files.length-1, fids = {};
+        let rescanRequired = false, i=files.length, fids = {};
 
         (function doIt() {
 
-            if (i < 0) {
+            if (i <= 0) {
                 if (rescanRequired && !restartCount) {
-                    return setTimeout(start, 0, restartCount+1);
+                    return setTimeout(start, 0, (restartCount||0)+1);
                 }
                 scripts.scripts.forEach ((o) => {
                     let fo = fids[o.id];
@@ -669,7 +669,8 @@ function start(restartCount) {
                 return;
             }
 
-            let o = fids[o.id] = files[i++];
+            let o = files[--i];
+            fids[o.id] = o;
             let obj = scripts.fn2obj (o.fn);
             if ((!obj || obj.common.mtime < o.mtime) && o.fullfn.endsWith ('.js')) {  // at first only files, no directories
                 if (!obj) rescanRequired = true;
