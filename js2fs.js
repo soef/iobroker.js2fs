@@ -13,7 +13,6 @@ const
     child_process = require('child_process')
 ;
 
-
 const
     SETTINGS = 'js2fs-settings',
     SETTINGS_JSON = SETTINGS + '.json',
@@ -25,23 +24,19 @@ const
 
     reSettings = new RegExp (SETTINGS.replace(/\-/g, '\\-')), ///file\-settings$/
     //reGlobalScriptMagic = /^[\s|\S]*CD3D5AC4-9831-4ECA-828F-17C369C592B5.*?\r?\n([\s|\S]*)/
-    reGlobalScriptMagic = new RegExp ('^[\\s|\\S]*' + GLOBALSCRIPT_MAGIC.replace(/\-/g, '\\-') + '.*?\\r?\\n([\\s|\\S]*)')
-
+    reGlobalScriptMagic = new RegExp ('^[\\s|\\S]*' + GLOBALSCRIPT_MAGIC.replace(/\-/g, '\\-') + '.*?\\r?\\n([\\s|\\S]*)'),
+    emptyArray = []
 ;
 
 let noext, killext, ignoreObjectChange, scripts;
 let rootDir, logFilter, copyLog;
 let logTimer = soef.Timer();
 
-noext = killext = function (fn) {
-    return fn.noext(); //fn.replace(/\.[^.]*?$/, '');
-};
 String.prototype.fullFn = function (fn) {
     if (!fn) return adapter.config.rootDir.fullFn(this);
-    //if (/^\\\\|^.\:\\/.test(fn) || fn.substring(0,1) === '/') return fn;
     //if (path.isAbsolute(fn)) return fn;
     if (fn.startsWith(adapter.config.rootDir)) return fn;
-    return path.normalize(path.join(this, fn)); // (this + '\\' + fn).replace(/[\\]{2,}/g, '\\');
+    return path.normalize(path.join(this, fn));
 };
 String.prototype.remove = function (regex) {
     return this.replace(regex, '');
@@ -51,15 +46,19 @@ String.prototype.noext = function () {
     let fn = this;
     let ext = path.extname(fn);
     if (ext.length > 0) {
-        fn = fn.substring(0,fn.length-ext.length);
+        return fn.substring(0,fn.length-ext.length);
     }
-    return fn; //fn.replace(/\.[^.]*?$/, '');
+    return fn;
 };
 String.prototype.justPathname = function () {
-    //return this.replace(/(.*)\\.*?$/, '$1');
-    //return this.replace(/\\[^\\]*?$/, '');
     if (this.noext() === this) return this;
     return path.dirname(this);
+};
+String.prototype.justFilename = function () {
+    return this.replace(/.*[\\/]([^\\/]+?)$/, '$1');
+    // let idx = this.lastIndexOf(path.sep);
+    // if (idx >= 0) return this.substr(idx+1);
+    // return this;
 };
 String.prototype.withoutRoot = function () {
     if (this.startsWith(rootDir)) return this.substring(rootDir.length);
@@ -69,11 +68,6 @@ String.prototype.toFn = String.prototype.toFilename = String.prototype.id2fn = f
     let o = scripts.id2obj(this);
     if (!o) return;
     return adapter.config.rootDir.fullFn(o.fn);
-    // let ext = reSettings.test(this) ? '.json' : '.js';
-    // let fn = this.remove(reScriptJsDot);
-    // let fnArr = fn.split('.');
-    // fn = pathJoinArr(fnArr); //.replace(/\./g, '\\');
-    // return adapter.config.rootDir.fullFn(fn + ext);
 };
 
 function toUnixTime(t) {
@@ -82,14 +76,6 @@ function toUnixTime(t) {
 Date.prototype.getUnixTime = Date.prototype.getCTime = function () {
     return toUnixTime(this.getTime());
 };
-
-function pathJoinArr(arr) {
-    let res = '';
-    arr.forEach(function(element) {
-        res = path.join(res, element);
-    });
-    return res;
-}
 
 let adapter = soef.Adapter(
     main,
@@ -109,12 +95,6 @@ function onStateChange(id, state) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-function saveToFile(id, source, mtime) {
-    let fn = id.toFn();
-    adapter.log.debug('saveToFile: ' + fn);
-    if (fn) writeFile(fn, source, mtime);
-}
 
 function deleteFile(id) {
     let dn, fn = id.toFn();
@@ -147,7 +127,7 @@ function onObjectChange(id, object) {
     o.common = object.common;
     let mtime = new Date().getUnixTime();
     soef.modifyObject(id, {common: { mtime: mtime }});
-    saveToFile(id, object.common.source, mtime);
+    writeFile(id.toFn(), source, mtime);
 }
 
 
@@ -269,11 +249,6 @@ let Scripts = function () {
                 return o.isSettings ? '.json' : '.js';
             }
 
-            // function buildFilename(o) {
-            //     let fn = o.id.remove(reScriptJsDot);
-            //     let fnArr = fn.split('.');
-            //     return path.sep + pathJoinArr(fnArr) + ext(o);
-            // }
             function buildFilename(o) {
                 let fn = o.id.remove(reScriptJs).replace(/\./g, path.sep);
                 if (o.common && o.common.name) fn = fn.replace(/([^\\/]+?)$/, o.common.name);
@@ -327,12 +302,9 @@ let Scripts = function () {
             callback = mtime;
             mtime = undefined;
         }
-        // let name = path.replace(/^[\\\/](.*)\..+?$/, '$1').replace(/[\\/]/g, '.');
-        // let id = 'script.js.' + normalizedName(name);
         let name = path.replace(/^[\\\/](.*)\..+?$/, '$1');   // führenden BS und Extension entfernen
         let id = 'script.js.' + normalizedName(name);
-        //name = name.replace(/[\\/]/g, '.');
-        name = name.replace(/.*[\\/]([^\\/]+?)$/, '$1');      // only filename
+        name = name.justFilename();                           // only filename
         id = id.replace(/[\\/]/g, '.');
 
         let obj = {
@@ -366,7 +338,7 @@ let Scripts = function () {
         if (adapter.config.disableWrite) return callback && callback (new Error ('EACCES: permission denied'));
         let obj = this.fn2obj(fn);
 
-        adapter.log.debug('scripts.change: saving to object. fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()));
+        adapter.log.debug('scripts.change: saving to ioBroker. fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()));
 
         source = source.toString();
         if (!obj || obj.isSettings === 'create') {  // create new file
@@ -476,6 +448,7 @@ function readAll(startDir) {
 
 
 function writeFile(fn, data, mtime) {
+    if (!fn) return;
     adapter.log.debug('writeFile: fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()));
     let filePath = fn.justPathname();
     if (!soef.existDirectory(filePath)) {
@@ -501,7 +474,6 @@ function writeFile(fn, data, mtime) {
             }
             fs.closeSync(fd);
         }
-        //fs.writeFileSync (fn, data);
     } catch (e) {
     }
 }
@@ -528,16 +500,6 @@ let watcher = {
             this.handle = null;
         }
     },
-    // get ignore() {
-    //     if (this.cnt) {
-    //         this.cnt -= 1;
-    //         return true;
-    //     }
-    //     return false;
-    // },
-    // set ignore(fn) {
-    //     this.cnt += 1;
-    // },
     ignore: function(fn) {
         this.cnt += 1;
         adapter.log.debug('watcher.ignore cnt=' + this.cnt);
@@ -556,27 +518,26 @@ let watcher = {
             persistent: true
         }). on('ready', function () {
             initialScanComplete = true;
-        }). on('all', function (eventType, filename, details) {
+        }). on('all', function (eventType, fullfn, details) {
             if (!initialScanComplete) return;
             if (self.cnt) {
                 self.cnt -= 1;
-                adapter.log.debug('watcher.run: event ignored! cnt=' + self.cnt + ' - ' + eventType + ' - ' + filename);
+                adapter.log.debug('watcher.run: event ignored! cnt=' + self.cnt + ' - ' + eventType + ' - ' + fullfn);
                 return;
             }
 
             if (eventType === 'addDir') {
-                adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' type ignored');
+                adapter.log.debug('watcher.run: ' + eventType + ' - ' + fullfn + ' type ignored');
                 return;
             }
             //jetbrians temp filename: \global\Global_global.js___jb_tmp___
-            if (!filename || !/\.js$|\.json$/.test(filename)) {
-                adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored');
+            if (!fullfn || !/\.js$|\.json$/.test(fullfn)) {
+                adapter.log.debug('watcher.run: ' + eventType + ' - ' + fullfn + ' ignored');
                 return;
             }
-            adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename);
+            adapter.log.debug('watcher.run: ' + eventType + ' - ' + fullfn);
 
-            let fullfn = filename;
-            if (filename.indexOf(adapter.config.rootDir) === 0) filename = filename.substring(adapter.config.rootDir.length);
+            let filename = fullfn.withoutRoot();
             if (filename[0] !== path.sep) filename = path.sep + filename;
             let file = getFileObject(fullfn);
             if (!file || file.source === false) {
@@ -584,60 +545,59 @@ let watcher = {
                 return;
                 //return scripts.delete(filename);
             }
-            if (file.source === '') {
-                adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because file empty');
+            // if (file.source === '') {
+            //     adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because file empty');
+            //     return;
+            // } else {
+            let obj = scripts.fn2obj(filename);
+            if (obj && eventType === 'add') {
+                adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because already exists');
                 return;
-            } else {
-                let obj = scripts.fn2obj(filename);
-                if (obj && eventType === 'add') {
-                    adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because already exists');
-                    return;
-                }
-                let cmdRes = file.source.match(/^[\/\s]*!!([\S]*)/);
-                let cmd = '';
-                if (cmdRes && cmdRes[1]) cmd = cmdRes[1];
-                let ar = cmd.match(/^(.*?)=(.*?)$/);
-                if (ar && ar[1]) cmd = ar[1];
-                switch (cmd) {
-                    // case 'log':
-                    //     logFilter = ar[2];
-                    //     if (logFilter === 'this' || logFilter === 'self') logFilter = filename.noext();//replace(/\\(.*?).js$/, '$1');
-                    //     logTimer.set(copyLog, 500);
-                    //     return;
-                    case 'enable':
-                        soef.modifyObject(obj.id, { common: { enabled: true }});
-                        return;
-                    case 'disable':
-                        soef.modifyObject(obj.id, { common: { enabled: false }});
-                        return;
-                    case 'debug':
-                    case 'insertGlobalScript':
-                        //file.source = file.source.remove(/^insertGlobalScript![\s]*/);
-                        file.source = file.source.remove(/^[^\n^\r]*[\n\r]*/);
-                        adapter.log.debug('changed: insertGlobalScript! ' + filename);
-                        writeFile(filename.fullFn(), scripts.globalScript + file.source);
-                        return;
-                    //(adapter.config.useGlobalScriptAsPrefix && !obj.isGlobal && !obj.isSettings ? scripts.globalScript : '') + obj.value.common.source
-
-                    case 'reload':
-                        if (!obj) return;
-                        adapter.getForeignObject(obj.id, function (err, o) {
-                            if (err || !o) return;
-                            obj.common = o.common;
-                            writeFile(filename.fullFn(), o.common.source, o.common.mtime);
-                        });
-                        break;
-
-                    default:
-                        scripts.change(filename, file.source, file.mtime);
-                        break;
-                }
             }
+            if (eventType === 'unlink') {
+                adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because unlink not yet supported');
+                return;
+            }
+
+            let param, [, cmd] = file.source.match(/^[\/\s]*!!([\S]*)/) || emptyArray;
+            if (cmd && cmd.indexOf('=') >= 0) [, cmd, param] = cmd.match(/^(.*?)=(.*?)$/) || emptyArray;
+
+            switch (cmd) {
+                // case 'log':
+                //     logFilter = ar[2];
+                //     if (logFilter === 'this' || logFilter === 'self') logFilter = filename.noext();//replace(/\\(.*?).js$/, '$1');
+                //     logTimer.set(copyLog, 500);
+                //     return;
+                case 'enable':
+                    soef.modifyObject(obj.id, { common: { enabled: true }});
+                    return;
+                case 'disable':
+                    soef.modifyObject(obj.id, { common: { enabled: false }});
+                    return;
+                case 'debug':
+                case 'insertGlobalScript':
+                    file.source = file.source.remove(/^[^\n^\r]*[\n\r]*/);
+                    adapter.log.debug('changed: insertGlobalScript! ' + filename);
+                    writeFile(filename.fullFn(), scripts.globalScript + file.source);
+                    return;
+
+                case 'reload':
+                    if (!obj) return;
+                    adapter.getForeignObject(obj.id, function (err, o) {
+                        if (err || !o) return;
+                        obj.common = o.common;
+                        writeFile(filename.fullFn(), o.common.source, o.common.mtime);
+                    });
+                    break;
+
+                default:
+                    scripts.change(filename, file.source, file.mtime);
+                    break;
+            }
+            //}
         });
     },
-    restart: function() {
-        this.run();
-    }
+    restart: this.run
 };
 
 
