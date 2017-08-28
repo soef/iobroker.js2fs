@@ -77,6 +77,10 @@ function sendTo(target, command, message, callback) {
     });
 }
 
+function getTestscriptName(no, ext) {
+    return 'Test Script ' + no + (ext ? '.'+ext : '');
+}
+
 describe('Test ' + adapterShortName + ' adapter', function() {
     before('Test ' + adapterShortName + ' adapter: Start js-controller', function (_done) {
         this.timeout(600000); // because of first install from npm
@@ -91,12 +95,12 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             config.native.rootDir   = scriptDir;
             fs.mkdirSync(path.join(scriptDir,'tests'));
 
-            var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
-            var scriptContent1 = "console.log('Test Script 1 - LOCAL');";
+            var scriptFileTest1 = path.join(scriptDir,'tests',getTestscriptName(1)) + '.js';
+            var scriptContent1 = "console.log('" + getTestscriptName(1) + " - LOCAL');";
             fs.writeFileSync(scriptFileTest1,scriptContent1);
 
-            var scriptFileTest3 = path.join(scriptDir,'tests','TestScript3') + '.js';
-            var scriptContent3 = "console.log('Test Script 3 - LOCAL');";
+            var scriptFileTest3 = path.join(scriptDir,'tests',getTestscriptName(3)) + '.js';
+            var scriptContent3 = "console.log('" + getTestscriptName(3) + " - LOCAL');";
             fs.writeFileSync(scriptFileTest3,scriptContent3);
 
             setup.setAdapterConfig(config.common, config.native);
@@ -105,51 +109,51 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                     if (onObjectChanged) onObjectChanged(id, obj);
                 }, function (id, state) {
                     if (onStateChanged) onStateChanged(id, state);
-            },
-            function (_objects, _states) {
-                objects = _objects;
-                states  = _states;
-                states.subscribe("*");
-                objects.subscribe("*");
-                var script = {
-                    "common": {
-                        "name":         "Global Script",
-                        "engineType":   "Javascript/js",
-                        "source":       "console.log('Global');",
-                        "enabled":      true,
-                        "engine":       "system.adapter.javascript.0"
-                    },
-                    "type":             "script",
-                    "_id":              "script.js.global.TestGlobal",
-                    "native": {}
-                };
-                objects.setObject(script._id, script, function (err) {
-                    expect(err).to.be.not.ok;
-                    script = {
+                },
+                function (_objects, _states) {
+                    objects = _objects;
+                    states  = _states;
+                    states.subscribe("*");
+                    objects.subscribe("*");
+                    var script = {
                         "common": {
-                            "name": "Test Script 1",
-                            "engineType": "Javascript/js",
-                            "source": "console.log('Test Script 1');",
-                            "enabled": true,
-                            "engine": "system.adapter.javascript.0",
-                            "mtime": 1
+                            "name":         "Global Script",
+                            "engineType":   "Javascript/js",
+                            "source":       "console.log('Global');",
+                            "enabled":      true,
+                            "engine":       "system.adapter.javascript.0"
                         },
-                        "type": "script",
-                        "_id": "script.js.tests.TestScript1",
+                        "type":             "script",
+                        "_id":              "script.js.global.TestGlobal",
                         "native": {}
                     };
                     objects.setObject(script._id, script, function (err) {
                         expect(err).to.be.not.ok;
-                        _done();
+                        script = {
+                            "common": {
+                                "name": getTestscriptName(1),
+                                "engineType": "Javascript/js",
+                                "source": "console.log('" + getTestscriptName(1) + "');",
+                                "enabled": true,
+                                "engine": "system.adapter.javascript.0",
+                                "mtime": 1
+                            },
+                            "type": "script",
+                            "_id": "script.js.tests.Test_Script_1",
+                            "native": {}
+                        };
+                        objects.setObject(script._id, script, function (err) {
+                            expect(err).to.be.not.ok;
+                            _done();
+                        });
                     });
                 });
-            });
         });
     });
 
-/*
-    ENABLE THIS WHEN ADAPTER RUNS IN DEAMON MODE TO CHECK THAT IT HAS STARTED SUCCESSFULLY
-*/
+    /*
+        ENABLE THIS WHEN ADAPTER RUNS IN DEAMON MODE TO CHECK THAT IT HAS STARTED SUCCESSFULLY
+    */
     it('Test ' + adapterShortName + ' adapter: start adapter and Check if adapter started', function (done) {
         this.timeout(60000);
         var changedObjects = {};
@@ -159,7 +163,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (id.substring(0,10) === 'script.js.') {
                 expect(obj.common.mtime).not.to.be.undefined;
                 changedObjects[id] = true;
-                if (Object.keys(changedObjects).length === 3 && connectionChecked) {
+                if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
                     onObjectChanged = null;
                     done();
                 }
@@ -176,9 +180,10 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         type: 'instance'
                     },
                     function () {
+                        changedObjects['system.adapter.test.0'] = true;
                         states.subscribeMessage('system.adapter.test.0');
                         connectionChecked = true;
-                        if (Object.keys(changedObjects).length === 3 && connectionChecked) {
+                        if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
                             onObjectChanged = null;
                             done();
                         }
@@ -189,21 +194,21 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: Check that js files got created', function (done) {
         this.timeout(60000);
-        var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
+        var scriptFileTest1 = path.join(scriptDir,'tests', getTestscriptName(1)) + '.js';
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
-        expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('Test Script 1 - LOCAL');");
-        objects.getObject('script.js.tests.TestScript1', function(err, obj) {
+        expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
+        objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
             expect(obj.common.mtime).not.to.be.equal(1);
-            expect(obj.common.source).to.be.equal("console.log('Test Script 1 - LOCAL');");
+            expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
 
-            objects.getObject('script.js.tests.TestScript3', function(err, obj) {
+            objects.getObject('script.js.tests.Test_Script_3', function(err, obj) {
                 console.log(JSON.stringify(obj));
                 expect(err).to.be.null;
                 expect(obj.common.mtime).not.to.be.undefined;
-                expect(obj.common.source).to.be.equal("console.log('Test Script 3 - LOCAL');");
+                expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(3) + " - LOCAL');");
 
                 setTimeout(done, 2000);
             });
@@ -212,13 +217,13 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: update TestScript 1', function (done) {
         this.timeout(60000);
-        var scriptFileTest1 = path.join(scriptDir,'tests','TestScript1') + '.js';
-        var scriptContent = "console.log('Test Script 1 - NEW');";
+        var scriptFileTest1 = path.join(scriptDir,'tests',getTestscriptName(1)) + '.js';
+        var scriptContent = "console.log('" + getTestscriptName(1) + " - NEW');";
         var initObj = null;
 
         onObjectChanged = function (id, obj2) {
             console.log('Got Object-Modification on update for ' + id);
-            if (id !== 'script.js.tests.TestScript1') return;
+            if (id !== 'script.js.tests.Test_Script_1') return;
 
             expect(obj2.common.source).to.be.equal(scriptContent);
             expect(obj2.common.mtime).not.to.be.undefined;
@@ -228,25 +233,25 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             setTimeout(done, 2000);
         };
 
-        objects.getObject('script.js.tests.TestScript1', function(err, obj) {
+        objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
             expect(obj.common.mtime).not.to.be.undefined;
             initObj = obj;
 
-            console.log('CHANGE Local File TestScript1');
+            console.log('CHANGE Local File ' + getTestscriptName(1));
             fs.writeFileSync(scriptFileTest1, scriptContent);
         });
     });
 
-    it('Test ' + adapterShortName + ' adapter: create TestScript 2', function (done) {
+    it('Test ' + adapterShortName + ' adapter: create ' + getTestscriptName(2), function (done) {
         this.timeout(60000);
-        var scriptFileTest2 = path.join(scriptDir,'tests','TestScript2') + '.js';
-        var scriptContent = "console.log('Test Script 2');";
+        var scriptFileTest2 = path.join(scriptDir,'tests',getTestscriptName(2)) + '.js';
+        var scriptContent = "console.log('" + getTestscriptName(2) + "');";
 
         onObjectChanged = function (id, obj) {
             console.log('Got Object-Modification on create for ' + id);
-            if (id !== 'script.js.tests.TestScript2') return;
+            if (id !== 'script.js.tests.Test_Script_2') return;
 
             expect(obj.common.source).to.be.equal(scriptContent);
             expect(obj.common.mtime).not.to.be.undefined;
@@ -254,7 +259,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             setTimeout(done, 2000);
         };
 
-        console.log('CREATE Local File TestScript2');
+        console.log('CREATE Local File ' + getTestscriptName(2));
         fs.writeFileSync(scriptFileTest2,scriptContent);
     });
 
