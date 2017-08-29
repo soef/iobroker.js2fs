@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.10": {
+        "en": "delete operation supported",
+        "de": "Löschen wird nun unterstützt"
+      },
       "0.0.9": {
         "en": "Bidirectional sync after start, allow spaces in filenames",
         "de": "Bidirectional sync nach dem Start, Unterstützung von Leerzeichen in Dateinamen"

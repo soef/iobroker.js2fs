@@ -4,6 +4,7 @@
 
 [![NPM version](https://img.shields.io/npm/v/iobroker.js2fs.svg)](https://www.npmjs.com/package/iobroker.js2fs)
 [![Tests](https://img.shields.io/travis/soef/iobroker.js2fs/master.svg)](https://travis-ci.org/soef/iobroker.js2fs)
+[![Build status](https://ci.appveyor.com/api/projects/status/c92hrxu79mvs1qxo?svg=true)](https://ci.appveyor.com/project/soef/iobroker-js2fs)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/soef/iobroker.js2fs/blob/master/LICENSE)
 
 This adapter allows you to edit your ioBroker javascript files with your preferred IDE/editor.
