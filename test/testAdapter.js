@@ -170,7 +170,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 changedObjects[id] = true;
                 if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
                     onObjectChanged = null;
-                    done();
+                    setTimeout(done, 2000);
                 }
             }
         };
@@ -188,7 +188,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         connectionChecked = true;
                         if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
                             onObjectChanged = null;
-                            done();
+                            setTimeout(done, 2000);
                         }
                     });
             });
