@@ -324,8 +324,10 @@ let Scripts = function () {
 
         if (!mtime) getmtime(path, obj.common);
         adapter.log.debug('scripts.create: New Object: ' + id);
+        //soef.lastIdToModify = id;
         adapter.setForeignObjectNotExists(id, obj, function (err, _obj) {
-            if (!err && _obj) return self.read(callback);
+            //soef.lastIdToModify = undefined;
+            //if (!err && _obj) return self.read(callback);
             callback && callback(err);
         });
     };
