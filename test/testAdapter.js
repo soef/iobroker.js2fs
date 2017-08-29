@@ -129,6 +129,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         },
                         "type":             "script",
                         "_id":              "script.js.global.TestGlobal",
+                        //"_id":              "script.js.global.Global_Script",
                         "native": {}
                     };
                     objects.setObject(script._id, script, function (err) {
@@ -270,11 +271,13 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var scriptFileTest2 = fullScriptFn(1);
 
         onObjectChanged = function (id, obj) {
+            console.log('onObjectChanged unlink');
             expect(obj).to.be.null;
             expect(id).to.be.equal('script.js.tests.Test_Script_1');
             onObjectChanged = null;
             setTimeout(done, 2000);
         };
+        console.log('inlink(' + scriptFileTest2 + ')');
         fs.unlink(scriptFileTest2);
     });
 
@@ -285,23 +288,17 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
         objects.delObject('script.js.tests.Test_Script_3', function(err) {
             expect(err).to.be.null;
-            var exists;
-            try {
-               exists = fs.existsSync(scriptFileTest3);
-            } catch(e) {
-               exists = false;
-            }
-            expect(exists).to.be.false;
+            setTimeout(function() {
+                var exists;
+                try {
+                    exists = fs.existsSync(scriptFileTest3);
+                } catch(e) {
+                    exists = false;
+                }
+                expect(exists).to.be.false;
+                setTimeout(done, 2000);
+            }, 2000)
         });
-
-        onObjectChanged = function (id, obj) {
-            expect(obj).to.be.null;
-            expect(id).to.be.equal('script.js.tests.Test_Script_3');
-            onObjectChanged = null;
-            setTimeout(done, 2000);
-        };
-        console.log('unlink(' + scriptFileTest3 + ')');
-        fs.unlink(scriptFileTest3);
     });
 
     it('Test ' + adapterShortName + ' adapter: rename script object', function (done) {

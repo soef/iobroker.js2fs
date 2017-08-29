@@ -440,15 +440,14 @@ files = new (Files = class extends Array {
             if (stat && stat.isDirectory ()) {
                 return this.readDir (fullfn);
             }
-
             let oo = {
-                id: Files.fn2id (fullfn.withoutRoot ()),
+                //id: Files.fn2id (fullfn.withoutRoot ()),
                 fullfn: fullfn,
-                //fn: fullfn.substr (dir.length),
                 fn: fullfn.withoutRoot(), // substr (dir.length),
                 mtime: stat.mtime.getUnixTime (),
                 size: stat.size,
             };
+            if (!(oo.id = scripts.fn2obj(oo.fn))) oo.id = Files.fn2id (oo.fn);
             this.push (oo);
         });
     };
