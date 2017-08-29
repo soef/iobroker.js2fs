@@ -447,7 +447,8 @@ files = new (Files = class extends Array {
                 mtime: stat.mtime.getUnixTime (),
                 size: stat.size,
             };
-            if (!(oo.id = scripts.fn2obj(oo.fn))) oo.id = Files.fn2id (oo.fn);
+            let o = scripts.fn2obj(oo.fn);
+            oo.id = o && o.id ? o.id : Files.fn2id (oo.fn);
             this.push (oo);
         });
     };
