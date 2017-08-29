@@ -280,12 +280,12 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: delete script object', function (done) {
         this.timeout(10000);
-        let scriptFileTest3 = fullScriptFn(3);
+        var scriptFileTest3 = fullScriptFn(3);
         expect(fs.existsSync(scriptFileTest3)).to.be.true;
 
         objects.delObject('script.js.tests.Test_Script_3', function(err) {
             expect(err).to.be.null;
-            let exists;
+            var exists;
             try {
                exists = fs.existsSync(scriptFileTest3);
             } catch(e) {
@@ -305,7 +305,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: rename script object', function (done) {
         this.timeout(10000);
-        let scriptFileTest2 = fullScriptFn(2),
+        var scriptFileTest2 = fullScriptFn(2),
             newName = 'new Name for Script 2',
             oldId = 'script.js.tests.Test_Script_2',
             newId = 'script.js.tests.' + newName.replace(/ /g, '_');
@@ -324,7 +324,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 objects.delObject(oldId, function(err) {
                     expect(err).to.be.null;
                     setTimeout(function() {
-                        let exists = fs.existsSync(scriptFileTest2);
+                        var exists = fs.existsSync(scriptFileTest2);
                         expect(exists).to.be.false;
                         scriptFileTest2 = path.join(scriptDir,'tests', newName) + '.js';
                         exists = fs.existsSync(scriptFileTest2);
