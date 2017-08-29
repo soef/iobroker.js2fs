@@ -266,7 +266,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
     });
 
     it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(1), function (done) {
-        this.timeout(10000);
+        this.timeout(20000);
         var scriptFileTest2 = fullScriptFn(1);
 
         onObjectChanged = function (id, obj) {
@@ -279,7 +279,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
     });
 
     it('Test ' + adapterShortName + ' adapter: delete script object', function (done) {
-        this.timeout(10000);
+        this.timeout(20000);
         var scriptFileTest3 = fullScriptFn(3);
         expect(fs.existsSync(scriptFileTest3)).to.be.true;
 
@@ -304,7 +304,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
     });
 
     it('Test ' + adapterShortName + ' adapter: rename script object', function (done) {
-        this.timeout(10000);
+        this.timeout(20000);
         var scriptFileTest2 = fullScriptFn(2),
             newName = 'new Name for Script 2',
             oldId = 'script.js.tests.Test_Script_2',
@@ -326,11 +326,13 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                     setTimeout(function() {
                         var exists = fs.existsSync(scriptFileTest2);
                         expect(exists).to.be.false;
+                        console.log(scriptFileTest2 + ' was removed!');
                         scriptFileTest2 = path.join(scriptDir,'tests', newName) + '.js';
+                        console.log(scriptFileTest2 + ' should exist');
                         exists = fs.existsSync(scriptFileTest2);
                         expect(exists).to.be.true;
                         setTimeout(done, 2000);
-                    }, 1000)
+                    }, 2000)
                 })
 
             });
