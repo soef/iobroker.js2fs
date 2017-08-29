@@ -23,12 +23,11 @@ const
     reScriptJs = /^script\.js/,
 
     reSettings = new RegExp (SETTINGS.replace(/\-/g, '\\-')), ///file\-settings$/
-    //reGlobalScriptMagic = /^[\s|\S]*CD3D5AC4-9831-4ECA-828F-17C369C592B5.*?\r?\n([\s|\S]*)/
     reGlobalScriptMagic = new RegExp ('^[\\s|\\S]*' + GLOBALSCRIPT_MAGIC.replace(/\-/g, '\\-') + '.*?\\r?\\n([\\s|\\S]*)'),
     emptyArray = []
 ;
 
-let noext, killext, ignoreObjectChange, scripts;
+let Files, files, noext, killext, ignoreObjectChange, scripts;
 let rootDir, logFilter, copyLog;
 let logTimer = soef.Timer();
 
@@ -96,38 +95,35 @@ function onStateChange(id, state) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function deleteFile(id) {
-    let dn, fn = id.toFn();
-    adapter.log.debug('deleteFile: ' + fn);
-    if (!fn) return;
-    if (soef.isDirectory((dn = fn.noext()))) {
-        adapter.log.debug('deleteDirectory: ' + dn);
-        watcher.ignore(dn);
-        return soef.rmdirSync(dn);
-    }
-    watcher.ignore(fn);
-    soef.unlink(fn);
-}
-
 function onObjectChange(id, object) {
     if (soef.lastIdToModify === id || ignoreObjectChange || !reScriptJsDot.test(id)) return;
     adapter.log.debug('onObjectChange: ' + id);
 
     if (id && !object) { // deleted..
-        return deleteFile(id);
+        return Files.unlink(id);
     }
 
     let o = scripts.id2obj(id);
     if (!o)  {
         adapter.log.debug('onObjectChange: new object rescan');
-        return start();
+        return restart();
     }
     if (object.common.source === o.common.source) return;
 
     o.common = object.common;
     let mtime = new Date().getUnixTime();
     soef.modifyObject(id, {common: { mtime: mtime }});
-    writeFile(id.toFn(), source, mtime);
+    Files.write(id.toFn(), source, mtime);
+}
+
+function configChanged(config) {
+    let oldConfig = soef.clone(adapter.config);
+    Object.assign(adapter.config, config);
+
+    if (oldConfig.useGlobalScriptAsPrefix !== adapter.config.useGlobalScriptAsPrefix) {
+        scripts.read(function () {
+        });
+    }
 }
 
 
@@ -189,6 +185,7 @@ let Scripts = function () {
                 '  "useGlobalScriptAsPrefix": false,' +
                 '  "restartScript": true,' +
                 '  "disableWrite": false,' +
+                '  "allowDeleteScriptInioBroker": true,' +
                 ' }' +
                 '}'
             }
@@ -278,6 +275,9 @@ let Scripts = function () {
             });
 
             self.globalScript = self.globalScript.slice(0, -1) + GLOBALSCRIPT_SUFIX + '\n';
+            for (let i in fns) {
+                adapter.log.debug('fns[' + i + ']=' + fns[i].id);
+            }
             callback && callback();
         });
     };
@@ -399,95 +399,115 @@ let Scripts = function () {
                 self.enable(id, true, callback);
             })
         });
-    }
+    };
+
+    this.delete = function(o, callback) {
+        if (typeof o === 'string') o = ids[o];
+        if (!o) return;
+        adapter.log.debug('scripts.delete: id=' + o.id);
+        soef.lastIdToModify = o.id;
+        adapter.delForeignObject(o.id, (err) => {
+            soef.lastIdToModify = undefined;
+            callback && callback();
+        });
+        delete fns[o.fn];
+        delete ids[o.id];
+        for (let i in scripts) {
+            if (scripts[i].id === o.id) {
+                delete scripts[i];
+                break;
+            }
+        }
+    };
 
 };
 
 
-function configChanged(config) {
-    let oldConfig = soef.clone(adapter.config);
-    Object.assign(adapter.config, config);
-
-    if (oldConfig.useGlobalScriptAsPrefix !== adapter.config.useGlobalScriptAsPrefix) {
-        scripts.read(function () {
-        });
+files = new (Files = class extends Array {
+    constructor () {
+        super();
     }
-}
 
+    static fn2id(fn) {
+        let id = fn.remove(/^[\\/]/).noext().replace(/[\\\/]/g, '.').replace(/ /g, '_');
+        return 'script.js.' + id;
+    }
 
-function fn2id(fn) {
-    let id = fn.remove(/^[\\/]/).noext().replace(/[\\\/]/g, '.').replace(/ /g, '_');
-    return 'script.js.' + id;
-}
-
-let files = [];
-
-function readAll(startDir) {
-
-    function readAllFiles (rootDir) {
-        (soef.readdirSync (rootDir) || []).forEach ((fn) => {
-            let fullfn = rootDir.fullFn (fn);
+    readDir (dir) { // readAll
+        (soef.readdirSync (dir) || emptyArray).forEach ((fn) => {
+            let fullfn = dir.fullFn (fn);
             let stat = soef.lstatSync (fullfn);
-            if (stat && stat.isDirectory()) {
-                return readAllFiles (fullfn);
+            if (stat && stat.isDirectory ()) {
+                return this.readDir (fullfn);
             }
 
             let oo = {
-                id: fn2id (fullfn.withoutRoot()),
+                id: Files.fn2id (fullfn.withoutRoot ()),
                 fullfn: fullfn,
-                fn: fullfn.substr(startDir.length),
-                mtime: stat.mtime.getUnixTime(),
+                //fn: fullfn.substr (dir.length),
+                fn: fullfn.withoutRoot(), // substr (dir.length),
+                mtime: stat.mtime.getUnixTime (),
                 size: stat.size,
             };
-            files.push (oo);
+            this.push (oo);
         });
-    }
+    };
 
-    readAllFiles(startDir);
-}
-
-
-function writeFile(fn, data, mtime) {
-    if (!fn) return;
-    adapter.log.debug('writeFile: fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()));
-    let filePath = fn.justPathname();
-    if (!soef.existDirectory(filePath)) {
-        let ar = filePath.split (path.sep);
-        let s = '';
-        if (ar) ar.forEach ((n, i) => {
-            if (i > 0) s += path.sep;
-            s += n;
-            if (!soef.existDirectory(s)) {
-                adapter.log.debug('createDirectory: ' + s);
-                soef.mkdirSync (s);
-            }
-        });
-    }
-    try {
-        let fd = fs.openSync(fn, 'w');
-        if (fd) {
-            watcher.ignore(fn);
-            fs.writeSync(fd, data);
-            if (mtime) {
-                watcher.ignore(fn);
-                fs.futimesSync(fd, mtime, mtime);
-            }
-            fs.closeSync(fd);
+    static write(fn, data, mtime) { //writeFile
+        if (!fn) return;
+        adapter.log.debug('Files.write: fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()));
+        let filePath = fn.justPathname();
+        if (!soef.existDirectory(filePath)) {
+            let s = '', ar = filePath.split (path.sep);
+            if (ar) ar.forEach ((n, i) => {
+                if (i > 0) s += path.sep;
+                s += n;
+                if (!soef.existDirectory(s)) {
+                    adapter.log.debug('Files.write: createDirectory ' + s);
+                    soef.mkdirSync (s);
+                }
+            });
         }
-    } catch (e) {
+        try {
+            let fd = fs.openSync(fn, 'w');
+            if (fd) {
+                watcher.ignore(fn);
+                fs.writeSync(fd, data);
+                if (mtime) {
+                    watcher.ignore(fn);
+                    fs.futimesSync(fd, mtime, mtime);
+                }
+                fs.closeSync(fd);
+            }
+        } catch (e) {
+        }
     }
-}
 
-function getFileObject(fn) {
-    let obj = { };
-    let stat = soef.lstatSync(fn);
-    obj.source = soef.readFileSync(fn);
-    if (obj.source) obj.source = obj.source.toString();
-    obj.mtime = stat.mtime.getUnixTime();
-    adapter.log.debug('getFileObject: mtime=' + stat.mtime.toJSON());
-    return obj;
-}
+    static getObject(fn) {
+        let obj = { };
+        let stat = soef.lstatSync(fn);
+        obj.source = soef.readFileSync(fn);
+        if (obj.source) obj.source = obj.source.toString();
+        obj.mtime = stat.mtime.getUnixTime();
+        adapter.log.debug('Files.getObject: mtime=' + stat.mtime.toJSON());
+        return obj;
+    }
 
+    static unlink (id) {
+        let dn, fn = id.toFn ();
+        adapter.log.debug ('Files.unlink: ' + fn);
+        if (!fn) return;
+        if (soef.isDirectory ((dn = fn.noext ()))) {
+            adapter.log.debug ('Files.unlink: deleteDirectory ' + dn);
+            watcher.ignore (dn);
+            return soef.rmdirSync (dn);
+        }
+        watcher.ignore (fn);
+        soef.unlinkSync (fn);
+    }
+});
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 let watcher = {
     handle: null,
@@ -539,34 +559,29 @@ let watcher = {
 
             let filename = fullfn.withoutRoot();
             if (filename[0] !== path.sep) filename = path.sep + filename;
-            let file = getFileObject(fullfn);
+            let obj = scripts.fn2obj(filename);
+
+            if (eventType === 'unlink') {
+                if (obj && adapter.config.allowDeleteScriptInioBroker) scripts.delete(obj);
+                return;
+            }
+
+            let file = Files.getObject(fullfn);
             if (!file || file.source === false) {
                 adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because file not existing ');
                 return;
-                //return scripts.delete(filename);
             }
             // if (file.source === '') {
             //     adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because file empty');
             //     return;
             // } else {
-            let obj = scripts.fn2obj(filename);
             if (obj && eventType === 'add') {
                 adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because already exists');
                 return;
             }
-            if (eventType === 'unlink') {
-                adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because unlink not yet supported');
-                return;
-            }
 
-            let cmdRes = file.source.match(/^[\/\s]*!!([\S]*)/);
-            let cmd = '';
-            if (cmdRes && cmdRes[1]) cmd = cmdRes[1];
-            let ar = cmd.match(/^(.*?)=(.*?)$/);
-            if (ar && ar[1]) cmd = ar[1];
-
-            // let param, [, cmd] = file.source.match(/^[\/\s]*!!([\S]*)/) || emptyArray;
-            // if (cmd && cmd.indexOf('=') >= 0) [, cmd, param] = cmd.match(/^(.*?)=(.*?)$/) || emptyArray;
+            let param, [, cmd] = file.source.match(/^[\/\s]*!!([\S]*)/) || emptyArray;
+            if (cmd && cmd.indexOf('=') >= 0) [, cmd, param] = cmd.match(/^(.*?)=(.*?)$/) || emptyArray;
 
             switch (cmd) {
                 // case 'log':
@@ -612,7 +627,7 @@ function start(restartCount) {
     ignoreObjectChange = true;
     scripts.read(function () {
         files.length = 0;
-        readAll (adapter.config.rootDir);
+        files.readDir (adapter.config.rootDir);
         let rescanRequired = false, i=files.length, fids = {};
 
         (function doIt() {
@@ -625,7 +640,7 @@ function start(restartCount) {
                     let fo = fids[o.id];
                     if (!fo || fo.mtime < o.common.mtime) {
                         let fullfn = adapter.config.rootDir.fullFn (o.fn);
-                        writeFile (fullfn, o.common.source, o.common.mtime);
+                        Files.write (fullfn, o.common.source, o.common.mtime);
                     }
                 });
                 setTimeout(function() {
@@ -635,21 +650,26 @@ function start(restartCount) {
                 return;
             }
 
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             let o = files[--i];
             fids[o.id] = o;
             let obj = scripts.fn2obj (o.fn);
             if ((!obj || obj.common.mtime < o.mtime) && o.fullfn.endsWith ('.js')) {  // at first only files, no directories
                 if (!obj) rescanRequired = true;
-                let fobj = getFileObject (o.fullfn);
+                let fobj = Files.getObject (o.fullfn);
                 scripts.change (o.fn, fobj.source, fobj.mtime, doIt);
             } else {
                 setTimeout(doIt, 0);
             }
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////
         })();
     })
 }
 
-//var windows1252 = require('windows-1252');
+let restartTimer = new soef.Timer();
+function restart() {
+    restartTimer.set(start, 1500);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -749,12 +769,63 @@ function normalizeConfig(config) {
     if (config.useGlobalScriptAsPrefix === undefined) config.useGlobalScriptAsPrefix = true;
     if (config.restartScript === undefined) config.restartScript = true;
     if (config.disableWrite === undefined) config.disableWrite = false;
+    if (config.allowDeleteScriptInioBroker === undefined) config.allowDeleteScriptInioBroker = true;
 }
 
 
-function main() {
+(function () {
+    return;
+    let date = new Date();
+    let fn = soef.sprintf('c:\\automation\\iobroker\\log\\iobroker.%d-%02d-%02d.log', date.getFullYear(), date.getMonth()+1, date.getDate());
 
-    soef.switchToDebug(true);
+    fs.watchFile(fn, (curr, prev) => {
+        copyLog();
+    });
+
+    copyLog = function () {
+        adapter.log.debug('copyLog: fn=' + fn);
+        try {
+            let stat = fs.lstatSync(fn);
+            let f = fs.openSync(fn, 'r', 0o666);
+            let buf = new Buffer(40000);
+            let pos = stat.size > buf.length ? stat.size - buf.length : 0;
+            fs.readSync(f, buf, 0, buf.length, pos);
+            let ar = buf.toString().split('\r\n');
+            for (let i = ar.length - 1; i >= 0; i--) {
+                if (ar[i].indexOf('javascript.0 script.js') < 0 || (logFilter && ar[i].indexOf(logFilter) < 0)) {
+                    ar.splice(i, 1);
+                    continue;
+                }
+                //ar[i] = ar[i].replace(/^20[\d]{2,2}-[\d]{2,2}-[\d]{2,2} (.*?) - .*?javascript\.0 script\.js\.(.*)/, '$1$2');
+                let a = ar[i].match(/^20[\d]{2,2}-[\d]{2,2}-[\d]{2,2} (.*?) - .*?(warn|info|error).*?javascript\.0 script\.js\.(.*?): (.*)/);
+                ar[i] = soef.sprintf('%s%-7s%-30.30s %s', a[1], a[2], a[3], a[4]);
+            }
+            ar = ar.reverse();
+            fs.writeFileSync(adapter.config.rootDir + '/iobroker.log', ar.join('\r\n'));
+            adapter.log.info(ar[0]);
+
+        } catch (e) {
+            let i = e;
+        }
+    }
+})();
+
+// function checkLog() {
+//     let date = new Date();
+//     let fn = soef.sprintf('c:\\automation\\iobroker\\log\\iobroker.%d-%02d-%02d.log', date.getFullYear(), date.getMonth()+1, date.getDate());
+//
+//     fs.watchFile(fn, (curr, prev) => {
+//         copyLog();
+//     });
+// }
+
+
+
+function main() {
+    //checkLog();
+    //return;
+
+    //soef.switchToDebug(true);
 
     normalizeConfig(adapter.config);
     if (!adapter.config.rootDir) return;

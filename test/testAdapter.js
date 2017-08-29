@@ -15,6 +15,10 @@ var adapterShortName = setup.adapterName.substring(setup.adapterName.indexOf('.'
 
 var scriptDir = path.join(__dirname, 'myScripts');
 
+function fullScriptFn(no) {
+    return path.join(scriptDir, 'tests', getTestscriptName(no)) + '.js';
+}
+
 function checkConnectionOfAdapter(cb, counter) {
     counter = counter || 0;
     console.log('Try check #' + counter);
@@ -91,15 +95,15 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             config.common.enabled  = true;
             config.common.loglevel = 'debug';
 
-            fs.mkdirSync(scriptDir);
+            if (!fs.existsSync(scriptDir)) fs.mkdirSync(scriptDir);
             config.native.rootDir   = scriptDir;
-            fs.mkdirSync(path.join(scriptDir,'tests'));
+            if (!fs.existsSync(path.join(scriptDir, 'tests'))) fs.mkdirSync(path.join(scriptDir, 'tests'));
 
-            var scriptFileTest1 = path.join(scriptDir,'tests',getTestscriptName(1)) + '.js';
+            var scriptFileTest1 = fullScriptFn(1);
             var scriptContent1 = "console.log('" + getTestscriptName(1) + " - LOCAL');";
             fs.writeFileSync(scriptFileTest1,scriptContent1);
 
-            var scriptFileTest3 = path.join(scriptDir,'tests',getTestscriptName(3)) + '.js';
+            var scriptFileTest3 = fullScriptFn(3);
             var scriptContent3 = "console.log('" + getTestscriptName(3) + " - LOCAL');";
             fs.writeFileSync(scriptFileTest3,scriptContent3);
 
@@ -174,9 +178,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 if (res) console.log(res);
                 expect(res).not.to.be.equal('Cannot check connection');
                 objects.setObject('system.adapter.test.0', {
-                        common: {
-
-                        },
+                        common: { },
                         type: 'instance'
                     },
                     function () {
@@ -194,7 +196,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: Check that js files got created', function (done) {
         this.timeout(60000);
-        var scriptFileTest1 = path.join(scriptDir,'tests', getTestscriptName(1)) + '.js';
+        var scriptFileTest1 = fullScriptFn(1);
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
         expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
@@ -217,7 +219,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: update TestScript 1', function (done) {
         this.timeout(60000);
-        var scriptFileTest1 = path.join(scriptDir,'tests',getTestscriptName(1)) + '.js';
+        var scriptFileTest1 = fullScriptFn(1);
         var scriptContent = "console.log('" + getTestscriptName(1) + " - NEW');";
         var initObj = null;
 
@@ -246,7 +248,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: create ' + getTestscriptName(2), function (done) {
         this.timeout(60000);
-        var scriptFileTest2 = path.join(scriptDir,'tests',getTestscriptName(2)) + '.js';
+        var scriptFileTest2 = fullScriptFn(2);
         var scriptContent = "console.log('" + getTestscriptName(2) + "');";
 
         onObjectChanged = function (id, obj) {
@@ -261,6 +263,78 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
         console.log('CREATE Local File ' + getTestscriptName(2));
         fs.writeFileSync(scriptFileTest2,scriptContent);
+    });
+
+    it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(1), function (done) {
+        this.timeout(10000);
+        var scriptFileTest2 = fullScriptFn(1);
+
+        onObjectChanged = function (id, obj) {
+            expect(obj).to.be.null;
+            expect(id).to.be.equal('script.js.tests.Test_Script_1');
+            onObjectChanged = null;
+            setTimeout(done, 2000);
+        };
+        fs.unlink(scriptFileTest2);
+    });
+
+    it('Test ' + adapterShortName + ' adapter: delete script object', function (done) {
+        this.timeout(10000);
+        let scriptFileTest3 = fullScriptFn(3);
+        expect(fs.existsSync(scriptFileTest3)).to.be.true;
+
+        objects.delObject('script.js.tests.Test_Script_3', function(err) {
+            expect(err).to.be.null;
+            let exists;
+            try {
+               exists = fs.existsSync(scriptFileTest3);
+            } catch(e) {
+               exists = false;
+            }
+            expect(exists).to.be.false;
+        });
+
+        onObjectChanged = function (id, obj) {
+            expect(obj).to.be.null;
+            expect(id).to.be.equal('script.js.tests.Test_Script_3');
+            onObjectChanged = null;
+            setTimeout(done, 2000);
+        };
+        fs.unlink(scriptFileTest3);
+    });
+
+    it('Test ' + adapterShortName + ' adapter: rename script object', function (done) {
+        this.timeout(10000);
+        let scriptFileTest2 = fullScriptFn(2),
+            newName = 'new Name for Script 2',
+            oldId = 'script.js.tests.Test_Script_2',
+            newId = 'script.js.tests.' + newName.replace(/ /g, '_');
+
+        objects.getObject(oldId, function(err, obj) {
+            expect(err).to.be.null;
+            expect(obj).to.be.an.object;
+            expect(obj.common.name).to.be.equal('Test Script 2');
+            obj.common.name = newName;
+
+            objects.setObject(newId, obj, function(err, newObj) {
+                expect(err).to.be.null;
+                expect(newObj).to.be.not.null;
+                expect(newObj.id).to.be.equal(newId);
+
+                objects.delObject(oldId, function(err) {
+                    expect(err).to.be.null;
+                    setTimeout(function() {
+                        let exists = fs.existsSync(scriptFileTest2);
+                        expect(exists).to.be.false;
+                        scriptFileTest2 = path.join(scriptDir,'tests', newName) + '.js';
+                        exists = fs.existsSync(scriptFileTest2);
+                        expect(exists).to.be.true;
+                        setTimeout(done, 2000);
+                    }, 1000)
+                })
+
+            });
+        });
     });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
