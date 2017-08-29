@@ -105,7 +105,7 @@ function onObjectChange(id, object) {
 
     let o = scripts.id2obj(id);
     if (!o)  {
-        adapter.log.debug('onObjectChange: new object rescan');
+        adapter.log.debug('onObjectChange: new object restart');
         return restart();
     }
     if (object.common.source === o.common.source) return;
@@ -286,7 +286,7 @@ let Scripts = function () {
         let stat = soef.lstatSync(adapter.config.rootDir.fullFn(fn));
         if (stat && stat.mtime) {
             common.mtime = stat.mtime.getUnixTime();
-            adapter.log.debug('getmtime: ' + stat.mtime.toJSON());
+            //adapter.log.debug('getmtime: ' + stat.mtime.toJSON());
         }
     };
 
@@ -323,7 +323,7 @@ let Scripts = function () {
         };
 
         if (!mtime) getmtime(path, obj.common);
-        adapter.log.debug('create New Object: ' + id);
+        adapter.log.debug('scripts.create: New Object: ' + id);
         adapter.setForeignObjectNotExists(id, obj, function (err, _obj) {
             if (!err && _obj) return self.read(callback);
             callback && callback(err);
@@ -364,7 +364,7 @@ let Scripts = function () {
 
         let oldEnabled, id = obj.id;  // oldEnabled is already not true
         if (id.indexOf(path.sep) >= 0) {
-            adapter.log.error('invalid id: ' + id);
+            adapter.log.error('script.change: invalid id: ' + id);
             return;
         }
         soef.modifyObject(id, function (o) {
@@ -522,10 +522,10 @@ let watcher = {
     },
     ignore: function(fn) {
         this.cnt += 1;
-        adapter.log.debug('watcher.ignore cnt=' + this.cnt);
+        //adapter.log.debug('watcher.ignore cnt=' + this.cnt);
         this.timer.set(function () {
             this.cnt = 0;
-            adapter.log.debug('watcher.ignore: reset ignore cnt');
+            //adapter.log.debug('watcher.ignore: reset ignore cnt');
         }.bind(this), 1000);
         //this.list.push(fn);
     },
@@ -542,17 +542,17 @@ let watcher = {
             if (!initialScanComplete) return;
             if (self.cnt) {
                 self.cnt -= 1;
-                adapter.log.debug('watcher.run: event ignored! cnt=' + self.cnt + ' - ' + eventType + ' - ' + fullfn);
+                adapter.log.debug('watcher.run: ' + eventType + ' event ignored! cnt=' + self.cnt + ' - ' + fullfn);
                 return;
             }
 
             if (eventType === 'addDir') {
-                adapter.log.debug('watcher.run: ' + eventType + ' - ' + fullfn + ' type ignored');
+                adapter.log.debug('watcher.run: ' + eventType + ' event ignored - ' + fullfn);
                 return;
             }
             //jetbrians temp filename: \global\Global_global.js___jb_tmp___
             if (!fullfn || !/\.js$|\.json$/.test(fullfn)) {
-                adapter.log.debug('watcher.run: ' + eventType + ' - ' + fullfn + ' ignored');
+                adapter.log.debug('watcher.run: ' + eventType + ' event ignored - ' + fullfn);
                 return;
             }
             adapter.log.debug('watcher.run: ' + eventType + ' - ' + fullfn);
@@ -568,7 +568,7 @@ let watcher = {
 
             let file = Files.getObject(fullfn);
             if (!file || file.source === false) {
-                adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because file not existing ');
+                adapter.log.debug('watcher.run: ' + eventType + ' event ignored, because file not existing - ' + filename);
                 return;
             }
             // if (file.source === '') {
@@ -576,7 +576,7 @@ let watcher = {
             //     return;
             // } else {
             if (obj && eventType === 'add') {
-                adapter.log.debug('watcher.run: ' + eventType + ' - ' + filename + ' ignored, because already exists');
+                adapter.log.debug('watcher.run: ' + eventType + ' event ignored, because already exists - ' + filename);
                 return;
             }
 
@@ -604,7 +604,7 @@ let watcher = {
                 case 'debug':
                 case 'insertGlobalScript':
                     file.source = file.source.remove(/^[^\n^\r]*[\n\r]*/);
-                    adapter.log.debug('changed: insertGlobalScript! ' + filename);
+                    adapter.log.debug('watcher.run: debug -> insertGlobalScript! ' + filename);
                     writeFile(filename.fullFn(), scripts.globalScript + file.source);
                     return;
 
