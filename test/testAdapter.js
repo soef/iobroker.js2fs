@@ -85,6 +85,8 @@ function getTestscriptName(no, ext) {
     return 'Test Script ' + no + (ext ? '.'+ext : '');
 }
 
+var nextDelay = 4000;
+
 describe('Test ' + adapterShortName + ' adapter', function() {
     before('Test ' + adapterShortName + ' adapter: Start js-controller', function (_done) {
         this.timeout(600000); // because of first install from npm
@@ -170,7 +172,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 changedObjects[id] = true;
                 if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
                     onObjectChanged = null;
-                    setTimeout(done, 2000);
+                    setTimeout(done, nextDelay);
                 }
             }
         };
@@ -188,7 +190,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         connectionChecked = true;
                         if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
                             onObjectChanged = null;
-                            setTimeout(done, 2000);
+                            setTimeout(done, nextDelay);
                         }
                     });
             });
@@ -213,7 +215,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 expect(obj.common.mtime).not.to.be.undefined;
                 expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(3) + " - LOCAL');");
 
-                setTimeout(done, 2000);
+                setTimeout(done, nextDelay);
             });
         });
     });
@@ -233,7 +235,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             expect(((new Date().getTime()/1000)-obj2.common.mtime)<10).to.be.true;
             expect(obj2.common.mtime).not.to.be.equal(initObj.common.mtime);
             onObjectChanged = null;
-            setTimeout(done, 2000);
+            setTimeout(done, nextDelay);
         };
 
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
@@ -259,7 +261,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
             expect(obj.common.source).to.be.equal(scriptContent);
             expect(obj.common.mtime).not.to.be.undefined;
-            setTimeout(done, 2000);
+            setTimeout(done, nextDelay);
         };
 
         console.log('CREATE Local File ' + getTestscriptName(2));
@@ -276,7 +278,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             onObjectChanged = null;
             expect(obj).to.be.null;
             //expect(id).to.be.equal('script.js.tests.Test_Script_1');
-            setTimeout(done, 2000);
+            setTimeout(done, nextDelay);
         };
         console.log('unlinkSync(' + scriptFileTest2 + ')');
         fs.unlinkSync(scriptFileTest2);
@@ -297,7 +299,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                     exists = false;
                 }
                 expect(exists).to.be.false;
-                setTimeout(done, 2000);
+                setTimeout(done, nextDelay);
             }, 2000)
         });
     });
@@ -330,7 +332,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         console.log(scriptFileTest2 + ' should exist');
                         exists = fs.existsSync(scriptFileTest2);
                         expect(exists).to.be.true;
-                        setTimeout(done, 2000);
+                        setTimeout(done, nextDelay);
                     }, 2000)
                 })
 
