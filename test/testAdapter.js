@@ -259,7 +259,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
             expect(obj.common.source).to.be.equal(scriptContent);
             expect(obj.common.mtime).not.to.be.undefined;
-            setTimeout(done, 2000);
+            setTimeout(done);
         };
 
         console.log('CREATE Local File ' + getTestscriptName(2));
@@ -267,7 +267,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
     });
 
     it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(1), function (done) {
-        this.timeout(20000);
+        this.timeout(60000);
         var scriptFileTest2 = fullScriptFn(1);
 
         onObjectChanged = function (id, obj) {
@@ -278,12 +278,12 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             //expect(id).to.be.equal('script.js.tests.Test_Script_1');
             setTimeout(done, 2000);
         };
-        console.log('inlink(' + scriptFileTest2 + ')');
-        fs.unlink(scriptFileTest2);
+        console.log('unlinkSync(' + scriptFileTest2 + ')');
+        fs.unlinkSync(scriptFileTest2);
     });
 
     it('Test ' + adapterShortName + ' adapter: delete script object', function (done) {
-        this.timeout(30000);
+        this.timeout(60000);
         var scriptFileTest3 = fullScriptFn(3);
         expect(fs.existsSync(scriptFileTest3)).to.be.true;
 
