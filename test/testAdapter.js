@@ -279,7 +279,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
     });
 
     it('Test ' + adapterShortName + ' adapter: delete script object', function (done) {
-        this.timeout(20000);
+        this.timeout(30000);
         var scriptFileTest3 = fullScriptFn(3);
         expect(fs.existsSync(scriptFileTest3)).to.be.true;
 
@@ -300,11 +300,12 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             onObjectChanged = null;
             setTimeout(done, 2000);
         };
+        console.log('unlink(' + scriptFileTest3 + ')');
         fs.unlink(scriptFileTest3);
     });
 
     it('Test ' + adapterShortName + ' adapter: rename script object', function (done) {
-        this.timeout(20000);
+        this.timeout(30000);
         var scriptFileTest2 = fullScriptFn(2),
             newName = 'new Name for Script 2',
             oldId = 'script.js.tests.Test_Script_2',
