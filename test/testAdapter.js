@@ -259,7 +259,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
             expect(obj.common.source).to.be.equal(scriptContent);
             expect(obj.common.mtime).not.to.be.undefined;
-            setTimeout(done);
+            setTimeout(done, 2000);
         };
 
         console.log('CREATE Local File ' + getTestscriptName(2));
