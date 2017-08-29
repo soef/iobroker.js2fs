@@ -253,12 +253,12 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var scriptContent = "console.log('" + getTestscriptName(2) + "');";
 
         onObjectChanged = function (id, obj) {
+            onObjectChanged = null;
             console.log('Got Object-Modification on create for ' + id);
             if (id !== 'script.js.tests.Test_Script_2') return;
 
             expect(obj.common.source).to.be.equal(scriptContent);
             expect(obj.common.mtime).not.to.be.undefined;
-            onObjectChanged = null;
             setTimeout(done, 2000);
         };
 
@@ -271,10 +271,11 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var scriptFileTest2 = fullScriptFn(1);
 
         onObjectChanged = function (id, obj) {
-            console.log('onObjectChanged unlink');
-            expect(obj).to.be.null;
-            expect(id).to.be.equal('script.js.tests.Test_Script_1');
+            console.log('onObjectChanged unlink, id=' + id);
+            if (id !== 'script.js.tests.Test_Script_1') return;
             onObjectChanged = null;
+            expect(obj).to.be.null;
+            //expect(id).to.be.equal('script.js.tests.Test_Script_1');
             setTimeout(done, 2000);
         };
         console.log('inlink(' + scriptFileTest2 + ')');
