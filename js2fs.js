@@ -580,8 +580,14 @@ let watcher = {
                 return;
             }
 
-            let param, [, cmd] = file.source.match(/^[\/\s]*!!([\S]*)/) || emptyArray;
-            if (cmd && cmd.indexOf('=') >= 0) [, cmd, param] = cmd.match(/^(.*?)=(.*?)$/) || emptyArray;
+            let cmdRes = file.source.match(/^[\/\s]*!!([\S]*)/);
+            let cmd = '';
+            if (cmdRes && cmdRes[1]) cmd = cmdRes[1];
+            let ar = cmd.match(/^(.*?)=(.*?)$/);
+            if (ar && ar[1]) cmd = ar[1];
+
+            // let param, [, cmd] = file.source.match(/^[\/\s]*!!([\S]*)/) || emptyArray;
+            // if (cmd && cmd.indexOf('=') >= 0) [, cmd, param] = cmd.match(/^(.*?)=(.*?)$/) || emptyArray;
 
             switch (cmd) {
                 // case 'log':
