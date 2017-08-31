@@ -268,6 +268,22 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         fs.writeFileSync(scriptFileTest2,scriptContent);
     });
 
+    it('Test ' + adapterShortName + ' adapter: update ' + getTestscriptName(2) + ' in iobroker', function (done) {
+        this.timeout(60000);
+        var scriptFileTest2 = fullScriptFn(2);
+        var scriptContent = "console.log('" + getTestscriptName(2) + " UPDATED');";
+
+        var objNew = {};
+        objNew.common = {}
+        objNew.common.source = scriptContent;
+        objects.extendObject('script.js.tests.Test_Script_2',objNew, function(err) {
+            expect(err).to.be.null;
+            setTimeout(function() {
+                expect(fs.readFileSync(scriptFileTest2).toString()).to.be.equal(scriptContent);
+            }, 2000)
+        });
+    });
+
     it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(1), function (done) {
         this.timeout(60000);
         var scriptFileTest2 = fullScriptFn(1);

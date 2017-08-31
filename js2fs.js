@@ -113,7 +113,7 @@ function onObjectChange(id, object) {
     o.common = object.common;
     let mtime = new Date().getUnixTime();
     soef.modifyObject(id, {common: { mtime: mtime }});
-    Files.write(id.toFn(), source, mtime);
+    Files.write(id.toFn(), object.common.source, mtime);
 }
 
 function configChanged(config) {
