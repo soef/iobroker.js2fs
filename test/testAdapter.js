@@ -280,6 +280,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             expect(err).to.be.null;
             setTimeout(function() {
                 expect(fs.readFileSync(scriptFileTest2).toString()).to.be.equal(scriptContent);
+                done();
             }, 2000)
         });
     });
