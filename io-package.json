@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.10",
+    "version": "0.0.11",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.11": {
+        "en": "basic sync added (resync from ioBroker)",
+        "de": "Grundsynchronisation hinzugefügt"
+      },
       "0.0.10": {
         "en": "delete operation supported",
         "de": "Löschen wird nun unterstützt"

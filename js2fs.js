@@ -769,6 +769,17 @@ function checkJavascriptAdapter(callback) {
     });
 }
 
+
+function renameRootDir() {
+    let now = new Date().toJSON().replace(/[:.]/g, '-');
+    if (soef.existDirectory(adapter.config.rootDir)) {
+        let ba = path.dirname(adapter.config.rootDir) + '/$ba';
+        if (!soef.existDirectory(ba)) soef.mkdirSync(ba);
+        soef.renameSync(adapter.config.rootDir, ba + '/' + now);
+        soef.mkdirSync(adapter.config.rootDir);
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function normalizeConfig(config) {
@@ -778,6 +789,12 @@ function normalizeConfig(config) {
     if (config.restartScript === undefined) config.restartScript = true;
     if (config.disableWrite === undefined) config.disableWrite = false;
     if (config.allowDeleteScriptInioBroker === undefined) config.allowDeleteScriptInioBroker = true;
+    if (config.basicSync) {
+        renameRootDir();
+        soef.changeAdapterConfig (adapter, function(cfg) {
+             cfg.basicSync = false;
+        });
+    }
 }
 
 

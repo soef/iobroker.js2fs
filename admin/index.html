@@ -77,6 +77,10 @@
             "en": "Root Diretory to sync to",
             "de": "Basisverzeichnis (Ziel für Synchronisation)"
         },
+        "tooltip_rootDir": {
+            "en": "Destination for synchronisation",
+            "de": "Ziel für Synchronisation)"
+        },
         "ioBrokerRootdir": {
             "en": "ioBroker Root Directory e.g.: /opt/iobroker",
             "de": "Root Verzeichnis von ioBroker z.B.: /opt/iobroker"
@@ -84,6 +88,14 @@
         "log": {
             "en": "Error log export with filter",
             "de": "Fehlerprotokoll-Export"
+        },
+        "tooltip_basicSync": {
+            "de": "Originalverzeichnis wurd in ./$ba verschoben, neu erstellt und mit Daten aus ioBroker gefüllt",
+            "en": "The original directory will be moved to ./$ba, a new one created and filled with data from ioBroker"
+        },
+        "basicSync": {
+            "de": "Grundsynchronisierung",
+            "en": "Basic Sync"
         }
     };
 
@@ -105,7 +117,8 @@
         if (settings.restartScript === undefined) settings.restartScript = true;
         if (settings.disableWrite === undefined) settings.disableWrite = false;
         if (settings.ioBrokerRootdir === undefined) settings.ioBrokerRootdir = '';
-        
+        if (settings.basicSync === undefined) settings.basicSync = false;
+
 
 
         changed = true;
@@ -243,7 +256,10 @@
     <div id="settings">
         <table>
             <h1 class="translate">ftpAccess</h1>
-            <tr><td class="translate">rootDir</td><td width=5></td><td><input type="text" id="rootDir" class="value" size=50></td></tr>
+            <!--<tr><td class="translate">rootDir</td><td class="admin-icon"></td><td width=5></td><td><input type="text" id="rootDir" class="value" size=50></td></tr>-->
+            <tr><td><label for="rootDir" class="translate">rootDir</label></td><td class="admin-icon" data-link="false"></td><td><input type="text" id="rootDir" class="value" size=50></td><td></td></tr>
+            <tr><td><label for="basicSync" class="translate">basicSync</label></td><td class="admin-icon" data-link="false"></td><td><input type="checkbox" class="value" id="basicSync"/></td><td></td></tr>
+
         </table>
         <table>
             <h1 class="translate">options</h1>
