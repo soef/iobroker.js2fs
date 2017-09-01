@@ -773,7 +773,7 @@ function checkJavascriptAdapter(callback) {
 function renameRootDir() {
     let now = new Date().toJSON().replace(/[:.]/g, '-');
     if (soef.existDirectory(adapter.config.rootDir)) {
-        let ba = path.dirname(adapter.config.rootDir) + '/$ba';
+        let ba = path.join(path.dirname(adapter.config.rootDir), 'js2fs-backup');
         if (!soef.existDirectory(ba)) soef.mkdirSync(ba);
         soef.renameSync(adapter.config.rootDir, ba + '/' + now);
         soef.mkdirSync(adapter.config.rootDir);

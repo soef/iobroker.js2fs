@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.11",
+    "version": "0.0.12",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.12": {
+        "en": "changed name of backup directory",
+        "de": "Namen des Buckup-Verzeichnisses geändert"
+      },
       "0.0.11": {
         "en": "basic sync added (resync from ioBroker)",
         "de": "Grundsynchronisation hinzugefügt"
