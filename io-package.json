@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.12",
+    "version": "0.0.14",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.14": {
+        "en": "smal fixes in config",
+        "de": "Kleine Korrekturen in der Konfiguration"
+      },
       "0.0.12": {
         "en": "changed name of backup directory",
         "de": "Namen des Buckup-Verzeichnisses geändert"
