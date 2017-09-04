@@ -287,7 +287,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(1), function (done) {
         this.timeout(60000);
-        var scriptFileTest2 = fullScriptFn(1);
+        var scriptFileTest1 = fullScriptFn(1);
 
         onObjectChanged = function (id, obj) {
             console.log('onObjectChanged unlink, id=' + id);
@@ -297,8 +297,8 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             //expect(id).to.be.equal('script.js.tests.Test_Script_1');
             setTimeout(done, nextDelay);
         };
-        console.log('unlinkSync(' + scriptFileTest2 + ')');
-        fs.unlinkSync(scriptFileTest2);
+        console.log('unlinkSync(' + scriptFileTest1 + ')');
+        fs.unlinkSync(scriptFileTest1);
     });
 
     it('Test ' + adapterShortName + ' adapter: delete script object', function (done) {
@@ -395,8 +395,9 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         console.log('unlinkSync(' + scriptFileTest2 + ')');
         fs.unlinkSync(scriptFileTest2);
         setTimeout(function() {
-            objects.getObject('script.js.tests.new_Name_for_Script_2', function(obj) {
-                expect(obj).to.be.not.null;
+            objects.getObject('script.js.tests.new_Name_for_Script_2', function(err, obj) {
+                expect(err).to.be.null;
+                expect(obj).not.to.be.null;
                 setTimeout(done, nextDelay);
             });
         }, 2000);

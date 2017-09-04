@@ -111,7 +111,7 @@ function onObjectChange(id, object) {
     }
     if (object.common.source === o.common.source) return;
     if (adapter.config.disableWrite) {
-        adapter.log.info('Writing of changed into iobroker is disabled by adapter settings.');
+        adapter.log.info('Writing of changes into files is disabled by adapter settings.');
         return;
     }
 
@@ -351,7 +351,7 @@ let Scripts = function () {
             mtime = undefined;
         }
         if (adapter.config.disableWrite) {
-            adapter.log.info('Writing of changed into files is disabled by adapter settings.');
+            adapter.log.info('Writing of changes into ioBroker is disabled by adapter settings.');
             return callback && callback (new Error ('EACCES: permission denied'));
         }
         let obj = this.fn2obj(fn);
