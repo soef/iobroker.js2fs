@@ -195,6 +195,11 @@ let Scripts = function () {
         addoo(oo);
     }
 
+    this.update = function(o) {
+        ids[o.id] = o;
+        fns[o.fn] = o; // Overwrite object
+    }
+
     this.read = function (callback) {
         ids = {};
         fns = {};
@@ -654,8 +659,7 @@ function start(restartCount) {
                 scripts.scripts.forEach ((o) => {
                     if (o.isSettings === 'create') {
                         o.isSettings = true;
-                        scripts.ids[o.id] = o;
-                        scripts.fns[o.fn] = o; // Overwrite object
+                        scripts.update(o);
                         adapter.log.debug('Fix isSettings for ' + o.id);
                     }
                     let fo = fids[o.id];
