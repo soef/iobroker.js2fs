@@ -372,7 +372,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
     it('Test ' + adapterShortName + ' adapter: update ' + getTestscriptName(2) + ' in iobroker Do not write!', function (done) {
         this.timeout(60000);
         var scriptFileTest2 = path.join(scriptDir,'tests', 'new Name for Script 2') + '.js';
-            
+
         var scriptContentOrig = "console.log('" + getTestscriptName(2) + " UPDATED');";
         var scriptContent = "console.log('" + getTestscriptName(2) + " UPDATED-DO_NOT_WRITE');";
 
@@ -388,14 +388,14 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         });
     });
 
-    it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(1) + ' Do not delete', function (done) {
+    it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(2) + ' Do not delete', function (done) {
         this.timeout(60000);
-        var scriptFileTest2 = fullScriptFn(2);
+        var scriptFileTest2 = path.join(scriptDir,'tests', 'new Name for Script 2') + '.js';
 
         console.log('unlinkSync(' + scriptFileTest2 + ')');
         fs.unlinkSync(scriptFileTest2);
         setTimeout(function() {
-            objects.getObject('script.js.tests.Test_Script_2', function(obj) {
+            objects.getObject('script.js.tests.new_Name_for_Script_2', function(obj) {
                 expect(obj).to.be.not.null;
                 setTimeout(done, nextDelay);
             });

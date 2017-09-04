@@ -110,6 +110,10 @@ function onObjectChange(id, object) {
         return restart();
     }
     if (object.common.source === o.common.source) return;
+    if (adapter.config.disableWrite) {
+        adapter.log.info('Writing of changed into iobroker is disabled by adapter settings.');
+        return;
+    }
 
     o.common = object.common;
     let mtime = new Date().getUnixTime();
@@ -346,7 +350,10 @@ let Scripts = function () {
             callback = mtime;
             mtime = undefined;
         }
-        if (adapter.config.disableWrite) return callback && callback (new Error ('EACCES: permission denied'));
+        if (adapter.config.disableWrite) {
+            adapter.log.info('Writing of changed into files is disabled by adapter settings.');
+            return callback && callback (new Error ('EACCES: permission denied'));
+        }
         let obj = this.fn2obj(fn);
 
         adapter.log.debug('scripts.change: saving to ioBroker. fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()) + ', obj=' + JSON.stringify(obj));
@@ -579,7 +586,14 @@ let watcher = {
             let obj = scripts.fn2obj(filename);
 
             if (eventType === 'unlink') {
-                if (obj && adapter.config.allowDeleteScriptInioBroker) scripts.delete(obj);
+                if (obj) {
+                    if (adapter.config.allowDeleteScriptInioBroker) {
+                        scripts.delete(obj);
+                    }
+                    else {
+                        adapter.log.info('Deletion of scripts in ioBroker is disabled by adapter settings.');
+                    }
+                }
                 return;
             }
 
