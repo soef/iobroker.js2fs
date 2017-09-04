@@ -347,11 +347,6 @@ let Scripts = function () {
 
         source = source.toString();
         if (!obj || obj.isSettings === 'create') {  // create new file
-            if (obj && obj.isSettings) {
-                obj.isSettings = true;
-                ids[obj.id] = obj;
-                fns[obj.fn] = obj; // Overwrite object
-            }
             return this.create (fn, source, mtime, callback);
         }
 
@@ -657,6 +652,12 @@ function start(restartCount) {
                     return setTimeout(start, 0, (restartCount||0)+1);
                 }
                 scripts.scripts.forEach ((o) => {
+                    if (o.isSettings === 'create') {
+                        o.isSettings = true;
+                        ids[o.id] = o;
+                        fns[o.fn] = o; // Overwrite object
+                        adapter.log.debug('Fix isSettings for ' + o.id);
+                    }
                     let fo = fids[o.id];
                     if (!fo || fo.mtime < o.common.mtime) {
                         let fullfn = adapter.config.rootDir.fullFn (o.fn);
