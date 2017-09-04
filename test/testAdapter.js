@@ -100,6 +100,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (!fs.existsSync(scriptDir)) fs.mkdirSync(scriptDir);
             config.native.rootDir   = scriptDir;
             if (!fs.existsSync(path.join(scriptDir, 'tests'))) fs.mkdirSync(path.join(scriptDir, 'tests'));
+            config.native.basicSync = true;
 
             var scriptFileTest1 = fullScriptFn(1);
             var scriptContent1 = "console.log('" + getTestscriptName(1) + " - LOCAL');";
@@ -197,9 +198,10 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         });
     });
 
-    it('Test ' + adapterShortName + ' adapter: Check that js files got created', function (done) {
+    it('Test ' + adapterShortName + ' adapter: Check that js files and backup-dir got created', function (done) {
         this.timeout(60000);
         var scriptFileTest1 = fullScriptFn(1);
+        expect(fs.existsSync(path.join(path.dirname(scriptDir), 'js2fs-backup'))).to.be.true;
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
         expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
@@ -358,7 +360,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
     });
 
     it('Test ' + adapterShortName + ' adapter: update config and do basic-Sync ', function (done) {
-        this.timeout(120000);
+        this.timeout(60000);
 
         var changeCount = 0;
         onObjectChanged = function (id, obj) {
@@ -366,11 +368,10 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (id !== 'system.adapter.iobroker.js2fs.0') return;
             if (++changeCount < 2) return;
             onObjectChanged = null;
-            expect(fs.existsSync(path.join(path.dirname(scriptDir), 'js2fs-backup'))).to.be.true();
             setTimeout(done, nextDelay);
         };
         var modifiedSettings = JSON.parse(fs.readFileSync(path.join(scriptDir, 'js2fs-settings.json')));
-        modifiedSettings.config.basicSync = true;
+        modifiedSettings.config.useGlobalScriptAsPrefix = true;
         console.log('writeFileSync(js2fs-settings.json): ' + JSON.stringify(modifiedSettings));
         fs.writeFileSync(path.join(scriptDir, 'js2fs-settings.json'), JSON.stringify(modifiedSettings));
     });
