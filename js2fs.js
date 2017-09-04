@@ -370,7 +370,7 @@ let Scripts = function () {
                 if (json) configChanged (json.config || json);
             } catch (e) {
             }
-            adapter.log.info('Adapter settings for fs2js changed from file ' + id);
+            adapter.log.info('Adapter settings for fs2js changed from file ' + obj.id);
             return;
         }
 
