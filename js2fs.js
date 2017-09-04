@@ -126,6 +126,7 @@ function configChanged(config) {
         scripts.read(function () {
         });
     }
+    adapter.log.debug('New adapter config: ' + JSON.stringify(adapter.config));
 }
 
 

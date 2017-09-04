@@ -208,7 +208,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
-            expect(obj.common.mtime).not.to.be.equal(1);
+            expect(obj.common.mtime).to.be.equal(1);
             expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + "');");
 
             objects.getObject('script.js.tests.Test_Script_3', function(err, obj) {
