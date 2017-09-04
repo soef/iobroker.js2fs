@@ -371,14 +371,15 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: update ' + getTestscriptName(2) + ' in iobroker Do not write!', function (done) {
         this.timeout(60000);
-        var scriptFileTest2 = fullScriptFn(2);
+        var scriptFileTest2 = path.join(scriptDir,'tests', 'new Name for Script 2') + '.js';
+            
         var scriptContentOrig = "console.log('" + getTestscriptName(2) + " UPDATED');";
         var scriptContent = "console.log('" + getTestscriptName(2) + " UPDATED-DO_NOT_WRITE');";
 
         var objNew = {};
         objNew.common = {}
         objNew.common.source = scriptContent;
-        objects.extendObject('script.js.tests.Test_Script_2',objNew, function(err) {
+        objects.extendObject('script.js.tests.new_Name_for_Script_2',objNew, function(err) {
             expect(err).to.be.null;
             setTimeout(function() {
                 expect(fs.readFileSync(scriptFileTest2).toString()).to.be.equal(scriptContentOrig);

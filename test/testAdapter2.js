@@ -204,12 +204,12 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         expect(fs.existsSync(path.join(path.dirname(scriptDir), 'js2fs-backup'))).to.be.true;
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
-        expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
+        expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('" + getTestscriptName(1) + "');");
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
             expect(obj.common.mtime).not.to.be.equal(1);
-            expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
+            expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + "');");
 
             objects.getObject('script.js.tests.Test_Script_3', function(err, obj) {
                 console.log(JSON.stringify(obj));
