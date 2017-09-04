@@ -100,6 +100,7 @@ function onObjectChange(id, object) {
     adapter.log.debug('onObjectChange: ' + id);
 
     if (id && !object) { // deleted..
+        adapter.log.info('Script ' + id + ' deleted in ioBroker, remove file too');
         return Files.unlink(id);
     }
 
@@ -364,6 +365,8 @@ let Scripts = function () {
                 if (json) configChanged (json.config || json);
             } catch (e) {
             }
+            adapter.log.info('Adapter settings for fs2js changed from file ' + id);
+            return;
         }
 
         let oldEnabled, id = obj.id;  // oldEnabled is already not true

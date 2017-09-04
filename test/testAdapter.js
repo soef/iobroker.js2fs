@@ -358,19 +358,19 @@ describe('Test ' + adapterShortName + ' adapter', function() {
     });
 
     it('Test ' + adapterShortName + ' adapter: update config and do basic-Sync ', function (done) {
-        this.timeout(60000);
+        this.timeout(120000);
 
         var changeCount = 0;
         onObjectChanged = function (id, obj) {
             console.log('onObjectChanged id=' + id);
-            if (id !== 'system.adapter.js2fs.0') return;
+            if (id !== 'system.adapter.iobroker.js2fs.0') return;
             if (++changeCount < 2) return;
             onObjectChanged = null;
             expect(fs.existsSync(path.join(path.dirname(scriptDir), 'js2fs-backup'))).to.be.true();
             setTimeout(done, nextDelay);
         };
         var modifiedSettings = JSON.parse(fs.readFileSync(path.join(scriptDir, 'js2fs-settings.json')));
-        modifiedSettings.config.baseSync = true;
+        modifiedSettings.config.basicSync = true;
         console.log('writeFileSync(js2fs-settings.json): ' + JSON.stringify(modifiedSettings));
         fs.writeFileSync(path.join(scriptDir, 'js2fs-settings.json'), JSON.stringify(modifiedSettings));
     });
