@@ -321,23 +321,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         });
     });
 
-    it('Test ' + adapterShortName + ' adapter: update config and do basic-Sync ', function (done) {
-        this.timeout(60000);
-
-        var changeCount = 0;
-        onObjectChanged = function (id, obj) {
-            console.log('onObjectChanged id=' + id);
-            if (id !== 'system.adapter.js2fs.0') return;
-            if (++changeCount < 2) return;
-            onObjectChanged = null;
-            expect(fs.existsSync(path.join(path.dirname(scriptDir), 'js2fs-backup'))).to.be.true();
-            setTimeout(done, nextDelay);
-        };
-        var modifiedSettings = JSON.parse(fs.readFileSync(path.join(scriptDir, 'js2fs-settings.json')));
-        modifiedSettings.baseSync = true;
-        fs.writeFileSync(path.join(scriptDir, 'js2fs-settings.json'), JSON.stringify(modifiedSettings));
-    });
-
     it('Test ' + adapterShortName + ' adapter: rename script object', function (done) {
         this.timeout(30000);
         var scriptFileTest2 = fullScriptFn(2),
@@ -373,6 +356,25 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             });
         });
     });
+
+    it('Test ' + adapterShortName + ' adapter: update config and do basic-Sync ', function (done) {
+        this.timeout(60000);
+
+        var changeCount = 0;
+        onObjectChanged = function (id, obj) {
+            console.log('onObjectChanged id=' + id);
+            if (id !== 'system.adapter.js2fs.0') return;
+            if (++changeCount < 2) return;
+            onObjectChanged = null;
+            expect(fs.existsSync(path.join(path.dirname(scriptDir), 'js2fs-backup'))).to.be.true();
+            setTimeout(done, nextDelay);
+        };
+        var modifiedSettings = JSON.parse(fs.readFileSync(path.join(scriptDir, 'js2fs-settings.json')));
+        modifiedSettings.config.baseSync = true;
+        console.log('writeFileSync(js2fs-settings.json): ' + JSON.stringify(modifiedSettings));
+        fs.writeFileSync(path.join(scriptDir, 'js2fs-settings.json'), JSON.stringify(modifiedSettings));
+    });
+
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {
         this.timeout(10000);

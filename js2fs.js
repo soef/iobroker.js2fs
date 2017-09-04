@@ -342,7 +342,7 @@ let Scripts = function () {
         if (adapter.config.disableWrite) return callback && callback (new Error ('EACCES: permission denied'));
         let obj = this.fn2obj(fn);
 
-        adapter.log.debug('scripts.change: saving to ioBroker. fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()));
+        adapter.log.debug('scripts.change: saving to ioBroker. fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()) + ', isSettings=' + obj.isSettings);
 
         source = source.toString();
         if (!obj || obj.isSettings === 'create') {  // create new file
