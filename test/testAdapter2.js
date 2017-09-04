@@ -189,7 +189,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         changedObjects['system.adapter.test.0'] = true;
                         states.subscribeMessage('system.adapter.test.0');
                         connectionChecked = true;
-                        if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
+                        if (Object.keys(changedObjects).length >= 1 && connectionChecked) {
                             onObjectChanged = null;
                             setTimeout(done, nextDelay);
                         }
