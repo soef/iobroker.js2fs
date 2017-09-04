@@ -373,8 +373,9 @@ let Scripts = function () {
             if (source === false) return callback && callback (new Error ('missing global script prefix'));
         }
         if (obj.isSettings) {
+            let json;
             try {
-                let json = JSON.parse (source);
+                json = JSON.parse (source);
             } catch (e) {
                 adapter.log.error('Error while parsing config update: ' + source + ': ' + e);
             }
