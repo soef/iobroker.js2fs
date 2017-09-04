@@ -113,7 +113,7 @@ function onObjectChange(id, object) {
     o.common = object.common;
     let mtime = new Date().getUnixTime();
     soef.modifyObject(id, {common: { mtime: mtime }});
-    console.log.info('Script ' + id + ' modified in ioBroker, write to file');
+    adapter.log.info('Script ' + id + ' modified in ioBroker, write to file');
     Files.write(id.toFn(), object.common.source, mtime);
 }
 
@@ -325,7 +325,7 @@ let Scripts = function () {
 
         if (!mtime) getmtime(path, obj.common);
         adapter.log.debug('scripts.create: New Object: ' + id);
-        console.log.info('New Script file ' + id + ', also create in ioBroker');
+        adapter.log.info('New Script file ' + id + ', also create in ioBroker');
         //soef.lastIdToModify = id;
         adapter.setForeignObjectNotExists(id, obj, function (err, _obj) {
             //soef.lastIdToModify = undefined;
@@ -371,7 +371,7 @@ let Scripts = function () {
             adapter.log.error('script.change: invalid id: ' + id);
             return;
         }
-        console.log.info('Script file ' + id + ' changed, also update in ioBroker');
+        adapter.log.info('Script file ' + id + ' changed, also update in ioBroker');
         soef.modifyObject(id, function (o) {
             o.common.source = source;
             o.common.mtime = mtime;
@@ -410,7 +410,7 @@ let Scripts = function () {
         if (typeof o === 'string') o = ids[o];
         if (!o) return;
         adapter.log.debug('scripts.delete: id=' + o.id);
-        console.log.info('Script file ' + o.id + ' deleted, also remove from ioBroker');
+        adapter.log.info('Script file ' + o.id + ' deleted, also remove from ioBroker');
         soef.lastIdToModify = o.id;
         adapter.delForeignObject(o.id, (err) => {
             soef.lastIdToModify = undefined;
@@ -652,7 +652,7 @@ function start(restartCount) {
                     let fo = fids[o.id];
                     if (!fo || fo.mtime < o.common.mtime) {
                         let fullfn = adapter.config.rootDir.fullFn (o.fn);
-                        console.log.info('Update Script file ' + o.id + ' from ioBroker');
+                        adapter.log.info('Update Script file ' + o.id + ' from ioBroker');
                         Files.write (fullfn, o.common.source, o.common.mtime);
                     }
                 });
