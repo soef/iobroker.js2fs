@@ -100,6 +100,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (!fs.existsSync(scriptDir)) fs.mkdirSync(scriptDir);
             config.native.rootDir   = scriptDir;
             if (!fs.existsSync(path.join(scriptDir, 'tests'))) fs.mkdirSync(path.join(scriptDir, 'tests'));
+            config.native.basicSync = true;
 
             var scriptFileTest1 = fullScriptFn(1);
             var scriptContent1 = "console.log('" + getTestscriptName(1) + " - LOCAL');";
@@ -197,9 +198,10 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         });
     });
 
-    it('Test ' + adapterShortName + ' adapter: Check that js files got created', function (done) {
+    it('Test ' + adapterShortName + ' adapter: Check that js files and backup-dir got created', function (done) {
         this.timeout(60000);
         var scriptFileTest1 = fullScriptFn(1);
+        expect(fs.existsSync(path.join(path.dirname(scriptDir), 'js2fs-backup'))).to.be.true;
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
         expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
@@ -218,187 +220,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                 setTimeout(done, nextDelay);
             });
         });
-    });
-
-    it('Test ' + adapterShortName + ' adapter: update TestScript 1', function (done) {
-        this.timeout(60000);
-        var scriptFileTest1 = fullScriptFn(1);
-        var scriptContent = "console.log('" + getTestscriptName(1) + " - NEW');";
-        var initObj = null;
-
-        onObjectChanged = function (id, obj2) {
-            console.log('Got Object-Modification on update for ' + id);
-            if (id !== 'script.js.tests.Test_Script_1') return;
-
-            expect(obj2.common.source).to.be.equal(scriptContent);
-            expect(obj2.common.mtime).not.to.be.undefined;
-            expect(((new Date().getTime()/1000)-obj2.common.mtime)<10).to.be.true;
-            expect(obj2.common.mtime).not.to.be.equal(initObj.common.mtime);
-            onObjectChanged = null;
-            setTimeout(done, nextDelay);
-        };
-
-        objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
-            console.log(JSON.stringify(obj));
-            expect(err).to.be.null;
-            expect(obj.common.mtime).not.to.be.undefined;
-            initObj = obj;
-
-            console.log('CHANGE Local File ' + getTestscriptName(1));
-            fs.writeFileSync(scriptFileTest1, scriptContent);
-        });
-    });
-
-    it('Test ' + adapterShortName + ' adapter: create ' + getTestscriptName(2), function (done) {
-        this.timeout(60000);
-        var scriptFileTest2 = fullScriptFn(2);
-        var scriptContent = "console.log('" + getTestscriptName(2) + "');";
-
-        onObjectChanged = function (id, obj) {
-            onObjectChanged = null;
-            console.log('Got Object-Modification on create for ' + id);
-            if (id !== 'script.js.tests.Test_Script_2') return;
-
-            expect(obj.common.source).to.be.equal(scriptContent);
-            expect(obj.common.mtime).not.to.be.undefined;
-            setTimeout(done, nextDelay);
-        };
-
-        console.log('CREATE Local File ' + getTestscriptName(2));
-        fs.writeFileSync(scriptFileTest2,scriptContent);
-    });
-
-    it('Test ' + adapterShortName + ' adapter: update ' + getTestscriptName(2) + ' in iobroker', function (done) {
-        this.timeout(60000);
-        var scriptFileTest2 = fullScriptFn(2);
-        var scriptContent = "console.log('" + getTestscriptName(2) + " UPDATED');";
-
-        var objNew = {};
-        objNew.common = {}
-        objNew.common.source = scriptContent;
-        objects.extendObject('script.js.tests.Test_Script_2',objNew, function(err) {
-            expect(err).to.be.null;
-            setTimeout(function() {
-                expect(fs.readFileSync(scriptFileTest2).toString()).to.be.equal(scriptContent);
-                done();
-            }, 2000)
-        });
-    });
-
-    it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(1), function (done) {
-        this.timeout(60000);
-        var scriptFileTest2 = fullScriptFn(1);
-
-        onObjectChanged = function (id, obj) {
-            console.log('onObjectChanged unlink, id=' + id);
-            if (id !== 'script.js.tests.Test_Script_1') return;
-            onObjectChanged = null;
-            expect(obj).to.be.null;
-            //expect(id).to.be.equal('script.js.tests.Test_Script_1');
-            setTimeout(done, nextDelay);
-        };
-        console.log('unlinkSync(' + scriptFileTest2 + ')');
-        fs.unlinkSync(scriptFileTest2);
-    });
-
-    it('Test ' + adapterShortName + ' adapter: delete script object', function (done) {
-        this.timeout(60000);
-        var scriptFileTest3 = fullScriptFn(3);
-        expect(fs.existsSync(scriptFileTest3)).to.be.true;
-
-        objects.delObject('script.js.tests.Test_Script_3', function(err) {
-            expect(err).to.be.null;
-            setTimeout(function() {
-                var exists;
-                try {
-                    exists = fs.existsSync(scriptFileTest3);
-                } catch(e) {
-                    exists = false;
-                }
-                expect(exists).to.be.false;
-                setTimeout(done, nextDelay);
-            }, 2000)
-        });
-    });
-
-    it('Test ' + adapterShortName + ' adapter: rename script object', function (done) {
-        this.timeout(30000);
-        var scriptFileTest2 = fullScriptFn(2),
-            newName = 'new Name for Script 2',
-            oldId = 'script.js.tests.Test_Script_2',
-            newId = 'script.js.tests.' + newName.replace(/ /g, '_');
-
-        objects.getObject(oldId, function(err, obj) {
-            expect(err).to.be.null;
-            expect(obj).to.be.an.object;
-            expect(obj.common.name).to.be.equal('Test Script 2');
-            obj.common.name = newName;
-
-            objects.setObject(newId, obj, function(err, newObj) {
-                expect(err).to.be.null;
-                expect(newObj).to.be.not.null;
-                expect(newObj.id).to.be.equal(newId);
-
-                objects.delObject(oldId, function(err) {
-                    expect(err).to.be.null;
-                    setTimeout(function() {
-                        var exists = fs.existsSync(scriptFileTest2);
-                        expect(exists).to.be.false;
-                        console.log(scriptFileTest2 + ' was removed!');
-                        scriptFileTest2 = path.join(scriptDir,'tests', newName) + '.js';
-                        console.log(scriptFileTest2 + ' should exist');
-                        exists = fs.existsSync(scriptFileTest2);
-                        expect(exists).to.be.true;
-                        setTimeout(done, nextDelay);
-                    }, 2000)
-                })
-
-            });
-        });
-    });
-
-    it('Test ' + adapterShortName + ' adapter: update config', function (done) {
-        this.timeout(60000);
-
-        var changeCount = 0;
-        var modifiedSettings = JSON.parse(fs.readFileSync(path.join(scriptDir, 'js2fs-settings.json')));
-        modifiedSettings.config.disableWrite = true;
-        modifiedSettings.config.allowDeleteScriptInioBroker = false;
-        console.log('writeFileSync(js2fs-settings.json): ' + JSON.stringify(modifiedSettings));
-        fs.writeFileSync(path.join(scriptDir, 'js2fs-settings.json'), JSON.stringify(modifiedSettings));
-        setTimeout(done, nextDelay);
-    });
-
-    it('Test ' + adapterShortName + ' adapter: update ' + getTestscriptName(2) + ' in iobroker Do not write!', function (done) {
-        this.timeout(60000);
-        var scriptFileTest2 = fullScriptFn(2);
-        var scriptContentOrig = "console.log('" + getTestscriptName(2) + " UPDATED');";
-        var scriptContent = "console.log('" + getTestscriptName(2) + " UPDATED-DO_NOT_WRITE');";
-
-        var objNew = {};
-        objNew.common = {}
-        objNew.common.source = scriptContent;
-        objects.extendObject('script.js.tests.Test_Script_2',objNew, function(err) {
-            expect(err).to.be.null;
-            setTimeout(function() {
-                expect(fs.readFileSync(scriptFileTest2).toString()).to.be.equal(scriptContentOrig);
-                done();
-            }, 2000)
-        });
-    });
-
-    it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(1) + ' Do not delete', function (done) {
-        this.timeout(60000);
-        var scriptFileTest2 = fullScriptFn(2);
-
-        console.log('unlinkSync(' + scriptFileTest2 + ')');
-        fs.unlinkSync(scriptFileTest2);
-        setTimeout(function() {
-            objects.getObject('script.js.tests.Test_Script_2', function(obj) {
-                expect(obj).to.be.not.null;
-                setTimeout(done, nextDelay);
-            });
-        }, 2000);
     });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {

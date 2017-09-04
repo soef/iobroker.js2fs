@@ -793,7 +793,7 @@ function renameRootDir() {
     if (soef.existDirectory(adapter.config.rootDir)) {
         let ba = path.join(path.dirname(adapter.config.rootDir), 'js2fs-backup');
         if (!soef.existDirectory(ba)) soef.mkdirSync(ba);
-        soef.renameSync(adapter.config.rootDir, ba + '/' + now);
+        soef.renameSync(adapter.config.rootDir, path.join(ba, now));
         soef.mkdirSync(adapter.config.rootDir);
     }
 }
