@@ -654,8 +654,8 @@ function start(restartCount) {
                 scripts.scripts.forEach ((o) => {
                     if (o.isSettings === 'create') {
                         o.isSettings = true;
-                        ids[o.id] = o;
-                        fns[o.fn] = o; // Overwrite object
+                        scripts.ids[o.id] = o;
+                        scripts.fns[o.fn] = o; // Overwrite object
                         adapter.log.debug('Fix isSettings for ' + o.id);
                     }
                     let fo = fids[o.id];
