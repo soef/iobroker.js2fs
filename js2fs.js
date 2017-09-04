@@ -182,7 +182,7 @@ let Scripts = function () {
             isSettings: 'create', //true,
             common: {
                 source: '{' +
-                '" config": {' +
+                '"config": {' +
                 '  "useGlobalScriptAsPrefix": false,' +
                 '  "restartScript": true,' +
                 '  "disableWrite": false,' +
