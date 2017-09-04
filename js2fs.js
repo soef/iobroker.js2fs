@@ -347,7 +347,10 @@ let Scripts = function () {
 
         source = source.toString();
         if (!obj || obj.isSettings === 'create') {  // create new file
-            if (obj && obj.isSettings) obj.isSettings = true;
+            if (obj && obj.isSettings) {
+                obj.isSettings = true;
+                this.add(obj); // Overwrite object
+            }
             return this.create (fn, source, mtime, callback);
         }
 
