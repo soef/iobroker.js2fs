@@ -119,7 +119,7 @@ function onObjectChange(id, object) {
 }
 
 function configChanged(config) {
-    let oldConfig = soef.clone(adapter.config);
+    let oldConfig = JSON.parse(JSON.stringify(adapter.config)); // soef.clone(adapter.config); Please fix in soef Library: TypeError: soef.clone is not a function
     Object.assign(adapter.config, config);
 
     if (oldConfig.useGlobalScriptAsPrefix !== adapter.config.useGlobalScriptAsPrefix) {
@@ -371,7 +371,7 @@ let Scripts = function () {
                 adapter.log.debug('Incoming config: ' + JSON.stringify(json));
                 if (json) configChanged (json.config || json);
             } catch (e) {
-                adapter.log.error('Error while parsing config update: ' + source + ': ' +e);
+                adapter.log.error('Error while parsing config update: ' + source + ': ' + e);
             }
             adapter.log.info('Adapter settings for fs2js changed from file ' + obj.id);
             return;
