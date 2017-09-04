@@ -349,7 +349,8 @@ let Scripts = function () {
         if (!obj || obj.isSettings === 'create') {  // create new file
             if (obj && obj.isSettings) {
                 obj.isSettings = true;
-                this.add(obj); // Overwrite object
+                ids[obj.id] = obj;
+                fns[obj.fn] = obj; // Overwrite object
             }
             return this.create (fn, source, mtime, callback);
         }
