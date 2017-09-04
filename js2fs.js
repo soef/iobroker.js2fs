@@ -371,7 +371,7 @@ let Scripts = function () {
                 adapter.log.debug('Incoming config: ' + JSON.stringify(json));
                 if (json) configChanged (json.config || json);
             } catch (e) {
-                adapter.log.error('Error while parsing config update: ' + source);
+                adapter.log.error('Error while parsing config update: ' + source + ': ' +e);
             }
             adapter.log.info('Adapter settings for fs2js changed from file ' + obj.id);
             return;
