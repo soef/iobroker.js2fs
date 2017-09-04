@@ -375,11 +375,11 @@ let Scripts = function () {
         if (obj.isSettings) {
             try {
                 let json = JSON.parse (source);
-                adapter.log.debug('Incoming config: ' + JSON.stringify(json));
-                if (json) configChanged (json.config || json);
             } catch (e) {
                 adapter.log.error('Error while parsing config update: ' + source + ': ' + e);
             }
+            adapter.log.debug('Incoming config: ' + JSON.stringify(json));
+            if (json) configChanged (json.config || json);
             adapter.log.info('Adapter settings for fs2js changed from file ' + obj.id);
             return;
         }
