@@ -325,7 +325,7 @@ let Scripts = function () {
 
         if (!mtime) getmtime(path, obj.common);
         adapter.log.debug('scripts.create: New Object: ' + id);
-        adapter.log.info('New Script file ' + id + ', also create in ioBroker');
+        adapter.log.info('New Script file ' + id + ' found, also create in ioBroker');
         //soef.lastIdToModify = id;
         adapter.setForeignObjectNotExists(id, obj, function (err, _obj) {
             //soef.lastIdToModify = undefined;
