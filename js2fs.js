@@ -637,7 +637,7 @@ let watcher = {
                 case 'insertGlobalScript':
                     file.source = file.source.remove(/^[^\n^\r]*[\n\r]*/);
                     adapter.log.debug('watcher.run: debug -> insertGlobalScript! ' + filename);
-                    writeFile(filename.fullFn(), scripts.globalScript + file.source);
+                    Files.write(filename.fullFn(), scripts.globalScript + file.source);
                     return;
 
                 case 'reload':
@@ -645,7 +645,7 @@ let watcher = {
                     adapter.getForeignObject(obj.id, function (err, o) {
                         if (err || !o) return;
                         obj.common = o.common;
-                        writeFile(filename.fullFn(), o.common.source, o.common.mtime);
+                        Files.write(filename.fullFn(), o.common.source, o.common.mtime);
                     });
                     break;
 
