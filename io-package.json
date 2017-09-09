@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.14",
+    "version": "0.0.15",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.15": {
+        "en": "fixed exception when aktivating debug mode",
+        "de": "Schutzverletung beim aktivieren des Debugmodes behoben"
+      },
       "0.0.14": {
         "en": "smal fixes in config",
         "de": "Kleine Korrekturen in der Konfiguration"
