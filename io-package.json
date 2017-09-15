@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.15",
+    "version": "0.0.16",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.16": {
+        "en": "Add info logging, fixed settings-handling, enhanced tests and several things more (by Apollon77)",
+        "de": "Logging hinzugefügt, Handhabung der Einstellungen korrigiert, Tests erweitert und einige weiter Änderungen (von Apollon77)"
+      },
       "0.0.15": {
         "en": "fixed exception when aktivating debug mode",
         "de": "Schutzverletung beim aktivieren des Debugmodes behoben"

@@ -1,6 +1,6 @@
 {
   "name": "iobroker.js2fs",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "ioBroker Javascript to file",
   "author": {
     "name": "soef",

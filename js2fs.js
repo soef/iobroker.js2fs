@@ -187,23 +187,23 @@ let Scripts = function () {
             isFile: true,
             isSettings: 'create', //true,
             common: {
-                source: '{' +
-                '"config": {' +
-                '  "useGlobalScriptAsPrefix": false,' +
-                '  "restartScript": true,' +
-                '  "disableWrite": false,' +
-                '  "allowDeleteScriptInioBroker": true' +
-                ' }' +
-                '}'
+                source: `{
+                    "config": {
+                         "useGlobalScriptAsPrefix": false,
+                         "restartScript": true,
+                         "disableWrite": false,
+                         "allowDeleteScriptInioBroker": true
+                    }
+                }`
             }
         };
         addoo(oo);
     }
 
-    this.update = function(o) {
-        ids[o.id] = o;
-        fns[o.fn] = o; // Overwrite object
-    }
+    // this.update = function(o) {
+    //     ids[o.id] = o;
+    //     fns[o.fn] = o; // Overwrite object
+    // };
 
     this.read = function (callback) {
         ids = {};
@@ -677,7 +677,7 @@ function start(restartCount) {
                 scripts.scripts.forEach ((o) => {
                     if (o.isSettings === 'create') {
                         o.isSettings = true;
-                        scripts.update(o);
+                        //scripts.update(o); //not necessary, o is a reference and the object is everywhere (e.g. in ids and in fns) the same
                         adapter.log.debug('Fix isSettings for ' + o.id);
                     }
                     let fo = fids[o.id];
