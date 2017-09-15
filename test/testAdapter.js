@@ -287,7 +287,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(1), function (done) {
         this.timeout(60000);
-        var scriptFileTest2 = fullScriptFn(1);
+        var scriptFileTest1 = fullScriptFn(1);
 
         onObjectChanged = function (id, obj) {
             console.log('onObjectChanged unlink, id=' + id);
@@ -297,8 +297,8 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             //expect(id).to.be.equal('script.js.tests.Test_Script_1');
             setTimeout(done, nextDelay);
         };
-        console.log('unlinkSync(' + scriptFileTest2 + ')');
-        fs.unlinkSync(scriptFileTest2);
+        console.log('unlinkSync(' + scriptFileTest1 + ')');
+        fs.unlinkSync(scriptFileTest1);
     });
 
     it('Test ' + adapterShortName + ' adapter: delete script object', function (done) {
@@ -355,6 +355,52 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
             });
         });
+    });
+
+    it('Test ' + adapterShortName + ' adapter: update config', function (done) {
+        this.timeout(60000);
+
+        var changeCount = 0;
+        var modifiedSettings = JSON.parse(fs.readFileSync(path.join(scriptDir, 'js2fs-settings.json')));
+        modifiedSettings.config.disableWrite = true;
+        modifiedSettings.config.allowDeleteScriptInioBroker = false;
+        console.log('writeFileSync(js2fs-settings.json): ' + JSON.stringify(modifiedSettings));
+        fs.writeFileSync(path.join(scriptDir, 'js2fs-settings.json'), JSON.stringify(modifiedSettings));
+        setTimeout(done, nextDelay);
+    });
+
+    it('Test ' + adapterShortName + ' adapter: update ' + getTestscriptName(2) + ' in iobroker Do not write!', function (done) {
+        this.timeout(60000);
+        var scriptFileTest2 = path.join(scriptDir,'tests', 'new Name for Script 2') + '.js';
+
+        var scriptContentOrig = "console.log('" + getTestscriptName(2) + " UPDATED');";
+        var scriptContent = "console.log('" + getTestscriptName(2) + " UPDATED-DO_NOT_WRITE');";
+
+        var objNew = {};
+        objNew.common = {}
+        objNew.common.source = scriptContent;
+        objects.extendObject('script.js.tests.new_Name_for_Script_2',objNew, function(err) {
+            expect(err).to.be.null;
+            setTimeout(function() {
+                expect(fs.readFileSync(scriptFileTest2).toString()).to.be.equal(scriptContentOrig);
+                done();
+            }, 2000)
+        });
+    });
+
+    it('Test ' + adapterShortName + ' adapter: unlink ' + getTestscriptName(2) + ' Do not delete', function (done) {
+        this.timeout(60000);
+        var scriptFileTest2 = path.join(scriptDir,'tests', 'new Name for Script 2') + '.js';
+
+        console.log('unlinkSync(' + scriptFileTest2 + ')');
+        fs.unlinkSync(scriptFileTest2);
+        setTimeout(function() {
+            objects.getObject('script.js.tests.new_Name_for_Script_2', function(err, obj) {
+                expect(err).to.be.null;
+                expect(obj).not.to.be.null;
+                setTimeout(done, nextDelay);
+            });
+        }, 2000);
     });
 
     after('Test ' + adapterShortName + ' adapter: Stop js-controller', function (done) {

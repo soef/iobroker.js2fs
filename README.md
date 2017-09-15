@@ -1,6 +1,6 @@
 ![Logo](admin/js2fs.png)
 
-### ioBroker.js2fs 
+### ioBroker.js2fs
 
 [![NPM version](https://img.shields.io/npm/v/iobroker.js2fs.svg)](https://www.npmjs.com/package/iobroker.js2fs)
 [![Tests](https://img.shields.io/travis/soef/iobroker.js2fs/master.svg)](https://travis-ci.org/soef/iobroker.js2fs)
@@ -10,8 +10,8 @@
 This adapter allows you to edit your ioBroker javascript files with your preferred IDE/editor.
 
 ### Info
-- Only for developers
-- This is a pre-release and only for test purposes 
+- Only for developers and for backup purposes (scripts are then files on disk and therefor can be included in backup)
+- This is a pre-release and only for test purposes
 - Currently debugging is restricted
 
 ### Benefits
@@ -20,14 +20,11 @@ This adapter allows you to edit your ioBroker javascript files with your preferr
 - breakpoints
 
 ### Usage
-e.g.: Webstorm: 
+e.g.: Webstorm:
 
 
 #### Installation
 Execute the following command in the iobroker root directory (e.g. in /opt/iobroker)
 ```
-npm install iobroker.js2fs 
+npm install iobroker.js2fs
 ```
-
-
-

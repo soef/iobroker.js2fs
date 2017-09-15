@@ -100,6 +100,7 @@ function onObjectChange(id, object) {
     adapter.log.debug('onObjectChange: ' + id);
 
     if (id && !object) { // deleted..
+        adapter.log.info('Script ' + id + ' deleted in ioBroker, remove file too');
         return Files.unlink(id);
     }
 
@@ -109,21 +110,27 @@ function onObjectChange(id, object) {
         return restart();
     }
     if (object.common.source === o.common.source) return;
+    if (adapter.config.disableWrite) {
+        adapter.log.info('Writing of changes into files is disabled by adapter settings.');
+        return;
+    }
 
     o.common = object.common;
     let mtime = new Date().getUnixTime();
     soef.modifyObject(id, {common: { mtime: mtime }});
+    adapter.log.info('Script ' + id + ' modified in ioBroker, write to file');
     Files.write(id.toFn(), object.common.source, mtime);
 }
 
 function configChanged(config) {
-    let oldConfig = soef.clone(adapter.config);
+    let oldConfig = JSON.parse(JSON.stringify(adapter.config)); // soef.clone(adapter.config); Please fix in soef Library: TypeError: soef.clone is not a function
     Object.assign(adapter.config, config);
 
     if (oldConfig.useGlobalScriptAsPrefix !== adapter.config.useGlobalScriptAsPrefix) {
         scripts.read(function () {
         });
     }
+    adapter.log.debug('New adapter config: ' + JSON.stringify(adapter.config));
 }
 
 
@@ -181,16 +188,21 @@ let Scripts = function () {
             isSettings: 'create', //true,
             common: {
                 source: '{' +
-                '" config": {' +
+                '"config": {' +
                 '  "useGlobalScriptAsPrefix": false,' +
                 '  "restartScript": true,' +
                 '  "disableWrite": false,' +
-                '  "allowDeleteScriptInioBroker": true,' +
+                '  "allowDeleteScriptInioBroker": true' +
                 ' }' +
                 '}'
             }
         };
         addoo(oo);
+    }
+
+    this.update = function(o) {
+        ids[o.id] = o;
+        fns[o.fn] = o; // Overwrite object
     }
 
     this.read = function (callback) {
@@ -324,6 +336,7 @@ let Scripts = function () {
 
         if (!mtime) getmtime(path, obj.common);
         adapter.log.debug('scripts.create: New Object: ' + id);
+        adapter.log.info('New Script file ' + id + ' found, also create in ioBroker');
         //soef.lastIdToModify = id;
         adapter.setForeignObjectNotExists(id, obj, function (err, _obj) {
             //soef.lastIdToModify = undefined;
@@ -337,10 +350,13 @@ let Scripts = function () {
             callback = mtime;
             mtime = undefined;
         }
-        if (adapter.config.disableWrite) return callback && callback (new Error ('EACCES: permission denied'));
+        if (adapter.config.disableWrite) {
+            adapter.log.info('Writing of changes into ioBroker is disabled by adapter settings.');
+            return callback && callback (new Error ('EACCES: permission denied'));
+        }
         let obj = this.fn2obj(fn);
 
-        adapter.log.debug('scripts.change: saving to ioBroker. fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()));
+        adapter.log.debug('scripts.change: saving to ioBroker. fn=' + fn + ' mtime=' + (new Date(mtime*1000).toJSON()) + ', obj=' + JSON.stringify(obj));
 
         source = source.toString();
         if (!obj || obj.isSettings === 'create') {  // create new file
@@ -357,11 +373,16 @@ let Scripts = function () {
             if (source === false) return callback && callback (new Error ('missing global script prefix'));
         }
         if (obj.isSettings) {
+            let json;
             try {
-                let json = JSON.parse (source);
-                if (json) configChanged (json.config || json);
+                json = JSON.parse (source);
             } catch (e) {
+                adapter.log.error('Error while parsing config update: ' + source + ': ' + e);
             }
+            adapter.log.debug('Incoming config: ' + JSON.stringify(json));
+            if (json) configChanged (json.config || json);
+            adapter.log.info('Adapter settings for fs2js changed from file ' + obj.id);
+            return;
         }
 
         let oldEnabled, id = obj.id;  // oldEnabled is already not true
@@ -369,6 +390,7 @@ let Scripts = function () {
             adapter.log.error('script.change: invalid id: ' + id);
             return;
         }
+        adapter.log.info('Script file ' + id + ' changed, also update in ioBroker');
         soef.modifyObject(id, function (o) {
             o.common.source = source;
             o.common.mtime = mtime;
@@ -383,7 +405,7 @@ let Scripts = function () {
             if (!oldEnabled) return callback && callback (null);
             self.enable(id, true, function (err, o) {
                 callback && callback (null);
-            })
+            });
         });
         if (obj.isGlobal) {
             self.read();
@@ -407,6 +429,7 @@ let Scripts = function () {
         if (typeof o === 'string') o = ids[o];
         if (!o) return;
         adapter.log.debug('scripts.delete: id=' + o.id);
+        adapter.log.info('Script file ' + o.id + ' deleted, also remove from ioBroker');
         soef.lastIdToModify = o.id;
         adapter.delForeignObject(o.id, (err) => {
             soef.lastIdToModify = undefined;
@@ -453,7 +476,7 @@ files = new (Files = class extends Array {
             oo.id = o && o.id ? o.id : Files.fn2id (oo.fn);
             this.push (oo);
         });
-    };
+    }
 
     static write(fn, data, mtime) { //writeFile
         if (!fn) return;
@@ -564,7 +587,14 @@ let watcher = {
             let obj = scripts.fn2obj(filename);
 
             if (eventType === 'unlink') {
-                if (obj && adapter.config.allowDeleteScriptInioBroker) scripts.delete(obj);
+                if (obj) {
+                    if (adapter.config.allowDeleteScriptInioBroker) {
+                        scripts.delete(obj);
+                    }
+                    else {
+                        adapter.log.info('Deletion of scripts in ioBroker is disabled by adapter settings.');
+                    }
+                }
                 return;
             }
 
@@ -645,9 +675,15 @@ function start(restartCount) {
                     return setTimeout(start, 0, (restartCount||0)+1);
                 }
                 scripts.scripts.forEach ((o) => {
+                    if (o.isSettings === 'create') {
+                        o.isSettings = true;
+                        scripts.update(o);
+                        adapter.log.debug('Fix isSettings for ' + o.id);
+                    }
                     let fo = fids[o.id];
                     if (!fo || fo.mtime < o.common.mtime) {
                         let fullfn = adapter.config.rootDir.fullFn (o.fn);
+                        adapter.log.info('Update Script file ' + o.id + ' from ioBroker');
                         Files.write (fullfn, o.common.source, o.common.mtime);
                     }
                 });
@@ -775,7 +811,7 @@ function renameRootDir() {
     if (soef.existDirectory(adapter.config.rootDir)) {
         let ba = path.join(path.dirname(adapter.config.rootDir), 'js2fs-backup');
         if (!soef.existDirectory(ba)) soef.mkdirSync(ba);
-        soef.renameSync(adapter.config.rootDir, ba + '/' + now);
+        soef.renameSync(adapter.config.rootDir, path.join(ba, now));
         soef.mkdirSync(adapter.config.rootDir);
     }
 }
