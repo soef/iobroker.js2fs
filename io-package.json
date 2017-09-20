@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.16",
+    "version": "0.0.17",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.0.17": {
+        "en": "normalizing config root path",
+        "de": "Normalisieren des konfigurierten Basisverzeichnispfades"
+      },
       "0.0.16": {
         "en": "Add info logging, fixed settings-handling, enhanced tests and several things more (by Apollon77)",
         "de": "Logging hinzugefügt, Handhabung der Einstellungen korrigiert, Tests erweitert und einige weiter Änderungen (von Apollon77)"

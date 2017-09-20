@@ -819,7 +819,7 @@ function renameRootDir() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function normalizeConfig(config) {
-    config.rootDir = config.rootDir.remove(/[\\/]$/);
+    config.rootDir = path.normalize(config.rootDir).remove(/[\\/]$/);
     if (config.port === undefined) config.port = 21;
     if (config.useGlobalScriptAsPrefix === undefined) config.useGlobalScriptAsPrefix = true;
     if (config.restartScript === undefined) config.restartScript = true;
