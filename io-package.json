@@ -1,11 +1,15 @@
 {
   "common": {
     "name": "js2fs",
-    "version": "0.0.17",
+    "version": "0.1.0",
     "title": "Javascript to file",
     "desc": "Javascript to file",
     "platform": "Javascript/Node.js",
     "news": {
+      "0.1.0": {
+        "en": "node 0.12 removed from testing",
+        "de": "node 0.12 auf testing entfernt"
+      },
       "0.0.17": {
         "en": "normalizing config root path",
         "de": "Normalisieren des konfigurierten Basisverzeichnispfades"
