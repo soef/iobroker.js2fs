@@ -330,7 +330,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
         objects.getObject(oldId, function(err, obj) {
             expect(err).to.be.null;
-            expect(obj).to.be.an.object;
+            expect(obj).to.be.an('object');
             expect(obj.common.name).to.be.equal('Test Script 2');
             obj.common.name = newName;
 
