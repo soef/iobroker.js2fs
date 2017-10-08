@@ -560,6 +560,7 @@ let watcher = {
         //this.handle = fs.watch(adapter.config.rootDir, { recursive: true }, function (eventType, filename) {
         this.handle = chokidar.watch(adapter.config.rootDir, {
             ignored: /(^|[\/\\])\../,
+            awaitWriteFinish: true,
             persistent: true
         }). on('ready', function () {
             initialScanComplete = true;
