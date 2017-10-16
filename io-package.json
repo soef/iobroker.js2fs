@@ -1,109 +1,114 @@
 {
-  "common": {
-    "name": "js2fs",
-    "version": "0.1.1",
-    "title": "Javascript to file",
-    "desc": "Javascript to file",
-    "platform": "Javascript/Node.js",
-    "news": {
-      "0.1.1": {
-        "en": "optimize timing when monitoring changes, now waits up to 2s till all changes are written",
-        "de": "Optimierung beim Überwachen der Änderungen, wartet jetzt bis zu 2s das alle Änderungen geschrieben wurden"
-      },
-      "0.1.0": {
-        "en": "node 0.12 removed from testing",
-        "de": "node 0.12 auf testing entfernt"
-      },
-      "0.0.17": {
-        "en": "normalizing config root path",
-        "de": "Normalisieren des konfigurierten Basisverzeichnispfades"
-      },
-      "0.0.16": {
-        "en": "Add info logging, fixed settings-handling, enhanced tests and several things more (by Apollon77)",
-        "de": "Logging hinzugefügt, Handhabung der Einstellungen korrigiert, Tests erweitert und einige weiter Änderungen (von Apollon77)"
-      },
-      "0.0.15": {
-        "en": "fixed exception when aktivating debug mode",
-        "de": "Schutzverletung beim aktivieren des Debugmodes behoben"
-      },
-      "0.0.14": {
-        "en": "smal fixes in config",
-        "de": "Kleine Korrekturen in der Konfiguration"
-      },
-      "0.0.12": {
-        "en": "changed name of backup directory",
-        "de": "Namen des Buckup-Verzeichnisses geändert"
-      },
-      "0.0.11": {
-        "en": "basic sync added (resync from ioBroker)",
-        "de": "Grundsynchronisation hinzugefügt"
-      },
-      "0.0.10": {
-        "en": "delete operation supported",
-        "de": "Löschen wird nun unterstützt"
-      },
-      "0.0.9": {
-        "en": "Bidirectional sync after start, allow spaces in filenames",
-        "de": "Bidirectional sync nach dem Start, Unterstützung von Leerzeichen in Dateinamen"
-      },
-      "0.0.8": {
-        "en": "misc. changes done by Apollon77",
-        "de": "Verschiedene Änderungen von Apollon77"
-      },
-      "0.0.7": {
-        "en": "log export added",
-        "de": "log export hinzugefügt"
-      },
-      "0.0.6": {
-        "en": "icon changed",
-        "de": "icon geändert"
-      },
-      "0.0.5": {
-        "en": "command for enable/disable script",
-        "de": "Kommando um Scripte zu aktivieren/deaktivieren"
-      },
-      "0.0.4": {
-        "en": "wrong old enabled value",
-        "de": "falscher old enabled Wert"
-      },
-      "0.0.3": {
-        "en": "Script is no longer enabled when saving",
-        "de": "Script wird beim Speichern nicht mehr aktiviert"
-      },
-      "0.0.2": {
-        "en": "readme & icon",
-        "de": "readme und Icon"
-      },
-      "0.0.1": {
-        "en": "Initial commit",
-        "de": "Erstveröffentlichung"
-      }
+    "common": {
+        "name": "js2fs",
+        "version": "0.1.1",
+        "title": "Javascript to file",
+        "desc": "Javascript to file",
+        "platform": "Javascript/Node.js",
+        "news": {
+            "0.1.1": {
+                "en": "optimize timing when monitoring changes, now waits up to 2s till all changes are written",
+                "de": "Optimierung beim Überwachen der Änderungen, wartet jetzt bis zu 2s das alle Änderungen geschrieben wurden"
+            },
+            "0.1.0": {
+                "en": "node 0.12 removed from testing",
+                "de": "node 0.12 auf testing entfernt"
+            },
+            "0.0.17": {
+                "en": "normalizing config root path",
+                "de": "Normalisieren des konfigurierten Basisverzeichnispfades"
+            },
+            "0.0.16": {
+                "en": "Add info logging, fixed settings-handling, enhanced tests and several things more (by Apollon77)",
+                "de": "Logging hinzugefügt, Handhabung der Einstellungen korrigiert, Tests erweitert und einige weiter Änderungen (von Apollon77)"
+            },
+            "0.0.15": {
+                "en": "fixed exception when aktivating debug mode",
+                "de": "Schutzverletung beim aktivieren des Debugmodes behoben"
+            },
+            "0.0.14": {
+                "en": "smal fixes in config",
+                "de": "Kleine Korrekturen in der Konfiguration"
+            },
+            "0.0.12": {
+                "en": "changed name of backup directory",
+                "de": "Namen des Buckup-Verzeichnisses geändert"
+            },
+            "0.0.11": {
+                "en": "basic sync added (resync from ioBroker)",
+                "de": "Grundsynchronisation hinzugefügt"
+            },
+            "0.0.10": {
+                "en": "delete operation supported",
+                "de": "Löschen wird nun unterstützt"
+            },
+            "0.0.9": {
+                "en": "Bidirectional sync after start, allow spaces in filenames",
+                "de": "Bidirectional sync nach dem Start, Unterstützung von Leerzeichen in Dateinamen"
+            },
+            "0.0.8": {
+                "en": "misc. changes done by Apollon77",
+                "de": "Verschiedene Änderungen von Apollon77"
+            },
+            "0.0.7": {
+                "en": "log export added",
+                "de": "log export hinzugefügt"
+            },
+            "0.0.6": {
+                "en": "icon changed",
+                "de": "icon geändert"
+            },
+            "0.0.5": {
+                "en": "command for enable/disable script",
+                "de": "Kommando um Scripte zu aktivieren/deaktivieren"
+            },
+            "0.0.4": {
+                "en": "wrong old enabled value",
+                "de": "falscher old enabled Wert"
+            },
+            "0.0.3": {
+                "en": "Script is no longer enabled when saving",
+                "de": "Script wird beim Speichern nicht mehr aktiviert"
+            },
+            "0.0.2": {
+                "en": "readme & icon",
+                "de": "readme und Icon"
+            },
+            "0.0.1": {
+                "en": "Initial commit",
+                "de": "Erstveröffentlichung"
+            }
+        },
+        "keywords": [
+            "sync",
+            "iobroker file",
+            "JetBrains",
+            "webstorm",
+            "file",
+            "debug",
+            "editor",
+            "ide"
+        ],
+        "mode": "daemon",
+        "icon": "js2fs.png",
+        "extIcon": "https://raw.githubusercontent.com/soef/iobroker.js2fs/master/admin/js2fs.png",
+        "readme": "https://github.com/soef/iobroker.js2fs/blob/master/README.md",
+        "loglevel": "info",
+        "type": "utility",
+        "enabled": true,
+        "messagebox": true,
+        "authors": [
+            {
+                "name": "soef",
+                "email": "soef@gmx.net"
+            }
+        ]
     },
-    "keywords": [
-      "sync",
-      "iobroker file",
-      "JetBrains",
-      "webstorm",
-      "file",
-      "debug",
-      "editor",
-      "ide"
-    ],
-    "mode": "daemon",
-    "icon": "js2fs.png",
-    "extIcon": "https://raw.githubusercontent.com/soef/iobroker.js2fs/master/admin/js2fs.png",
-    "readme": "https://github.com/soef/iobroker.js2fs/blob/master/README.md",
-    "loglevel": "info",
-    "type": "script",
-    "enabled": true,
-    "messagebox": true
-  },
-  "native": {
-    "rootDir": "",
-    "useGlobalScriptAsPrefix": true,
-    "restartScript": true,
-    "disableWrite": false
-  },
-  "objects": [
-  ]
+    "native": {
+        "rootDir": "",
+        "useGlobalScriptAsPrefix": true,
+        "restartScript": true,
+        "disableWrite": false
+    },
+    "objects": []
 }
