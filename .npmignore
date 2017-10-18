@@ -8,3 +8,4 @@ test
 ba
 .travis.yml
 appveyor.yml
+/npm-debug.log

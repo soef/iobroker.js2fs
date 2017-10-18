@@ -1,11 +1,15 @@
 {
     "common": {
         "name": "js2fs",
-        "version": "0.1.1",
+        "version": "0.1.2",
         "title": "Javascript to file",
         "desc": "Javascript to file",
         "platform": "Javascript/Node.js",
         "news": {
+            "0.1.2": {
+                "en": "update basic package-file testing (Apollon77)",
+                "de": "Erweiterung der Tests (Apollon77)"
+            },
             "0.1.1": {
                 "en": "optimize timing when monitoring changes, now waits up to 2s till all changes are written",
                 "de": "Optimierung beim Überwachen der Änderungen, wartet jetzt bis zu 2s das alle Änderungen geschrieben wurden"
