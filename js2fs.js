@@ -116,8 +116,20 @@ function onObjectChange(id, object) {
     }
 
     o.common = object.common;
-    let mtime = new Date().getUnixTime();
-    soef.modifyObject(id, {common: { mtime: mtime }});
+    if (object.ts && object.from) { // officially available beginning js-controller 1.2.1
+        o.ts = object.ts;
+    }
+    else { // fallback
+        o.ts = new Date().getTime();
+        soef.modifyObject(id, {ts: o.ts});
+        /* This would cleanup the mtime property, but do not know if this will
+           work that way
+        if (object.common.mtime) {
+            delete object.common.mtime;
+            soef.modifyObject(id, {common: { mtime: undefined }});
+        }*/
+    }
+    let mtime = new Date(o.ts).getUnixTime();
     adapter.log.info('Script ' + id + ' modified in ioBroker, write to file');
     Files.write(id.toFn(), object.common.source, mtime);
 }
@@ -228,13 +240,19 @@ let Scripts = function () {
                     common: o.common,
                     id: o._id,
                 };
-                if (typeof oo.common.mtime === 'string') {
-                    oo.common.mtime = new Date(oo.common.mtime).getUnixTime();
-                    soef.modifyObject(oo.id, {common: { mtime: oo.common.mtime }});
+                let mtime;
+                if (!o.ts) {
+                    if (typeof oo.common.mtime === 'string') {
+                        oo.common.mtime = new Date(oo.common.mtime).getUnixTime();
+                        soef.modifyObject(oo.id, {common: { mtime: oo.common.mtime }});
+                    }
+                    if (!oo.common.mtime || oo.common.mtime > now) {
+                        oo.common.mtime = now;
+                        soef.modifyObject(oo.id, {common: { mtime: now }});
+                    }
                 }
-                if (!oo.common.mtime || oo.common.mtime > now) {
-                    oo.common.mtime = now;
-                    soef.modifyObject(oo.id, {common: { mtime: now }});
+                else {
+                    oo.ts = o.ts;
                 }
                 if (reSettings.test(o._id)) {
                     oo.isSettings = true;
@@ -421,7 +439,7 @@ let Scripts = function () {
             if (err) return callback && callback(err);
             setTimeout(function () {
                 self.enable(id, true, callback);
-            })
+            });
         });
     };
 
@@ -530,7 +548,7 @@ files = new (Files = class extends Array {
         watcher.ignore (fn);
         soef.unlinkSync (fn);
     }
-});
+})();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -708,7 +726,7 @@ function start(restartCount) {
             }
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
         })();
-    })
+    });
 }
 
 let restartTimer = new soef.Timer();
@@ -869,7 +887,7 @@ function normalizeConfig(config) {
         } catch (e) {
             let i = e;
         }
-    }
+    };
 })();
 
 // function checkLog() {
