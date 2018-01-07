@@ -1,11 +1,15 @@
 {
     "common": {
         "name": "js2fs",
-        "version": "0.1.2",
+        "version": "0.1.3",
         "title": "Javascript to file",
         "desc": "Javascript to file",
         "platform": "Javascript/Node.js",
         "news": {
+            "0.1.3": {
+                "en": "Update utils.js and usage, CI Testing and deps (Apollon77)",
+                "de": "utils.js und Benutzung erneuert, CI Testing (Apollon77)"
+            },
             "0.1.2": {
                 "en": "update basic package-file testing (Apollon77)",
                 "de": "Erweiterung der Tests (Apollon77)"
