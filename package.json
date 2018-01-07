@@ -38,12 +38,12 @@
     "chokidar": "^1.7.0"
   },
   "devDependencies": {
-    "mocha": "^3.5.3",
+    "mocha": "^4.1.0",
     "chai": "^4.1.2"
   },
   "main": "js2fs.js",
   "scripts": {
-    "test": "node node_modules/mocha/bin/mocha"
+    "test": "node node_modules/mocha/bin/mocha --exit"
   },
   "bugs": {
     "url": "https://github.com/soef/iobroker.js2fs/issues"
