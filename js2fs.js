@@ -1,4 +1,4 @@
-﻿/* jshint -W097 */
+/* jshint -W097 */
 // jshint strict:false
 /*jslint node: true */
 /*jslint esversion: 6 */
@@ -273,7 +273,15 @@ let Scripts = function () {
 
             function ext(o) {
                 if (o.isFile !== true) return '';
-                return o.isSettings ? '.json' : '.js';
+                if (o.isSettings) return '.json';
+                if (o.common) {
+                    if (o.common.engineType) {
+                        if (o.common.engineType.match(/^[tT]ype[sS]cript/)) return '.ts';
+                        if (o.common.engineType.match(/^[cC]offee[sS]cript/)) return '.coffee';
+                        if (o.common.engineType.match(/^Blockly/)) return '.blockly';
+                    }
+                }
+                return '.js';
             }
 
             function buildFilename(o) {
@@ -336,11 +344,15 @@ let Scripts = function () {
         let id = 'script.js.' + normalizedName(name);
         name = name.justFilename();                           // only filename
         id = id.replace(/[\\/]/g, '.');
+        let engineType = "Javascript/js";
+        if (name.match(/.ts$/)) engineType = 'TypeScript/ts';
+        if (name.match(/.coffee$/)) engineType = 'Coffeescript/coffee';
+        if (name.match(/.blockly$/)) engineType = 'Blockly';
 
         let obj = {
             type: 'script',
             common: {
-                engineType: "Javascript/js",
+                engineType: engineType,
                 engine: "system.adapter.javascript.0",
                 debug: false,
                 verbose: false,
@@ -595,7 +607,7 @@ let watcher = {
                 return;
             }
             //jetbrians temp filename: \global\Global_global.js___jb_tmp___
-            if (!fullfn || !/\.js$|\.json$/.test(fullfn)) {
+            if (!fullfn || !/\.js$|\.json$|\.ts$|\.coffee$|\.blockly$/.test(fullfn)) {
                 adapter.log.debug('watcher.run: ' + eventType + ' event ignored - ' + fullfn);
                 return;
             }
@@ -717,7 +729,8 @@ function start(restartCount) {
             let o = files[--i];
             fids[o.id] = o;
             let obj = scripts.fn2obj (o.fn);
-            if ((!obj || obj.common.mtime < o.mtime) && o.fullfn.endsWith ('.js')) {  // at first only files, no directories
+            //including all script file types, but ignores typescript definition files '.d.ts'
+            if ((!obj || obj.common.mtime < o.mtime) && (o.fullfn.endsWith ('.js') || (!o.fullfn.endsWith ('.d.ts') && o.fullfn.endsWith ('.ts')) || o.fullfn.endsWith ('.coffee') || o.fullfn.endsWith ('.blockly'))) {  // at first only files, no directories
                 if (!obj) rescanRequired = true;
                 let fobj = Files.getObject (o.fullfn);
                 scripts.change (o.fn, fobj.source, fobj.mtime, doIt);
