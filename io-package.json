@@ -120,7 +120,8 @@
         "rootDir": "",
         "useGlobalScriptAsPrefix": true,
         "restartScript": true,
-        "disableWrite": false
+        "disableWrite": false,
+        "usePolling": false
     },
     "objects": []
 }
