@@ -50,8 +50,8 @@ systemDictionary = {
         "de": "Schreiben (Speichern) unterbinden"
     },
     "usePolling": {
-        "en": "Use Polling instead of fs.watch - should be only checked for non-standard situations",
-        "de": "Benutze polling anstelle der Standard Methode. Sollte nur in sonderfällen aktiviert werden."
+        "en": "Constant polling of file states",
+        "de": "ständiges abfragen der Dateizustände"
     },    
     "options": {
         "en": "Options",
