@@ -49,6 +49,10 @@ systemDictionary = {
         "en": "Disable write (save)",
         "de": "Schreiben (Speichern) unterbinden"
     },
+    "usePolling": {
+        "en": "Constant polling of file states",
+        "de": "ständiges abfragen der Dateizustände"
+    },    
     "options": {
         "en": "Options",
         "de": "Optionen"
