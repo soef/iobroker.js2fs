@@ -1,11 +1,15 @@
 {
     "common": {
         "name": "js2fs",
-        "version": "0.1.4",
+        "version": "0.1.5",
         "title": "Javascript to file",
         "desc": "Javascript to file",
         "platform": "Javascript/Node.js",
         "news": {
+            "0.1.5": {
+                "en": "Option to poll file states added  (Apollon77)",
+                "de": "Option Dateizustände zu pollen hinzugefügt (Apollon77)"
+            },
             "0.1.4": {
                 "en": "saves files accoring to the type  (Apollon77)",
                 "de": "Datei-Extension um .ts, .coffee and .blockly erweitert (Apollon77)"
