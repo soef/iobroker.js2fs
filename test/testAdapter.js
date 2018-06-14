@@ -110,7 +110,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             var scriptContent3 = "console.log('" + getTestscriptName(3) + " - LOCAL');";
             fs.writeFileSync(scriptFileTest3,scriptContent3);
 
-            var scriptFileTest10 = fullScriptFn(10);
+            var scriptFileTest10 = fullScriptFn(10, 'blockly');
             var scriptContent10 = "console.log('" + getTestscriptName(10) + " Blockly - LOCAL');";
             fs.writeFileSync(scriptFileTest10,scriptContent10);
 
