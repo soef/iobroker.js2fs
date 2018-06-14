@@ -160,7 +160,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                                 "common": {
                                     "name": getTestscriptName(11),
                                     "engineType": "Blockly",
-                                    "source": "console.log('" + getTestscriptName(11) + "');",
+                                    "source": "console.log('" + getTestscriptName(11) + " Blockly');",
                                     "enabled": true,
                                     "engine": "system.adapter.javascript.0",
                                     "mtime": 1
@@ -227,7 +227,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var scriptFileTest11 = fullScriptFn(11, 'blockly');
         console.log('check: ' + scriptFileTest11);
         expect(fs.existsSync(scriptFileTest11)).to.be.true;
-        expect(fs.readFileSync(scriptFileTest11).toString()).to.be.equal("console.log('" + getTestscriptName(11) + " Blockly - LOCAL');");
+        expect(fs.readFileSync(scriptFileTest11).toString()).to.be.equal("console.log('" + getTestscriptName(11) + " Blockly');");
 
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
