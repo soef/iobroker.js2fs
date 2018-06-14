@@ -15,8 +15,9 @@ var adapterShortName = setup.adapterName.substring(setup.adapterName.indexOf('.'
 
 var scriptDir = path.join(__dirname, 'myScripts');
 
-function fullScriptFn(no) {
-    return path.join(scriptDir, 'tests', getTestscriptName(no)) + '.js';
+function fullScriptFn(no, ext) {
+    if (!ext) ext = 'js';
+    return path.join(scriptDir, 'tests', getTestscriptName(no)) + '.' + ext;
 }
 
 function checkConnectionOfAdapter(cb, counter) {
