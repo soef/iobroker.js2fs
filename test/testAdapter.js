@@ -109,6 +109,10 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             var scriptContent3 = "console.log('" + getTestscriptName(3) + " - LOCAL');";
             fs.writeFileSync(scriptFileTest3,scriptContent3);
 
+            var scriptFileTest10 = fullScriptFn(10);
+            var scriptContent10 = "console.log('" + getTestscriptName(10) + " Blockly - LOCAL');";
+            fs.writeFileSync(scriptFileTest10,scriptContent10);
+
             setup.setAdapterConfig(config.common, config.native);
 
             setup.startController(false, function (id, obj) {
@@ -151,7 +155,23 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         };
                         objects.setObject(script._id, script, function (err) {
                             expect(err).to.be.not.ok;
-                            _done();
+                            script = {
+                                "common": {
+                                    "name": getTestscriptName(11),
+                                    "engineType": "Blockly",
+                                    "source": "console.log('" + getTestscriptName(11) + "');",
+                                    "enabled": true,
+                                    "engine": "system.adapter.javascript.0",
+                                    "mtime": 1
+                                },
+                                "type": "script",
+                                "_id": "script.js.tests.Test_Script_11",
+                                "native": {}
+                            };
+                            objects.setObject(script._id, script, function (err) {
+                                expect(err).to.be.not.ok;
+                                _done();
+                            });
                         });
                     });
                 });

@@ -241,7 +241,7 @@ let Scripts = function () {
                     id: o._id,
                 };
                 let mtime;
-                if (!o.ts) {
+                if (!o.from) { // js-controller < 1.2.0
                     if (typeof oo.common.mtime === 'string') {
                         oo.common.mtime = new Date(oo.common.mtime).getUnixTime();
                         soef.modifyObject(oo.id, {common: { mtime: oo.common.mtime }});
@@ -343,12 +343,11 @@ let Scripts = function () {
         let name = path.replace(/^[\\\/](.*)\..+?$/, '$1');   // führenden BS und Extension entfernen
         let id = 'script.js.' + normalizedName(name);
         name = name.justFilename();                           // only filename
-        adapter.log.debug('create script ' + name);        
         id = id.replace(/[\\/]/g, '.');
         let engineType = "Javascript/js";
-        if (name.match(/.ts$/)) engineType = 'TypeScript/ts';
-        if (name.match(/.coffee$/)) engineType = 'Coffeescript/coffee';
-        if (name.match(/.blockly$/)) engineType = 'Blockly';
+        if (path.endsWith('.ts')) engineType = 'TypeScript/ts';
+        if (path.endsWith('.coffee')) engineType = 'Coffeescript/coffee';
+        if (path.endsWith('.blockly')) engineType = 'Blockly';
 
         let obj = {
             type: 'script',
@@ -419,6 +418,10 @@ let Scripts = function () {
         let oldEnabled, id = obj.id;  // oldEnabled is already not true
         if (id.indexOf(path.sep) >= 0) {
             adapter.log.error('script.change: invalid id: ' + id);
+            return;
+        }
+        if (source.length === 0) {
+            adapter.log.warn('Script file ' + id + ' changed, but empty! Do not update in ioBroker');
             return;
         }
         adapter.log.info('Script file ' + id + ' changed, also update in ioBroker');
@@ -536,7 +539,6 @@ files = new (Files = class extends Array {
                 fs.closeSync(fd);
             }
         } catch (e) {
-            adapter.log.error('Error file "'+fn+'" '+e);
         }
     }
 
@@ -593,8 +595,7 @@ let watcher = {
         this.handle = chokidar.watch(adapter.config.rootDir, {
             ignored: /(^|[\/\\])\../,
             awaitWriteFinish: true,
-            persistent: true,
-            usePolling : adapter.config.usePolling, //default: false - set this to true to successfully watch files over a network
+            persistent: true
         }). on('ready', function () {
             initialScanComplete = true;
         }). on('all', function (eventType, fullfn, details) {
@@ -709,20 +710,16 @@ function start(restartCount) {
                     return setTimeout(start, 0, (restartCount||0)+1);
                 }
                 scripts.scripts.forEach ((o) => {
-                    try {
-	                    if (o.isSettings === 'create') {
-	                        o.isSettings = true;
-	                        //scripts.update(o); //not necessary, o is a reference and the object is everywhere (e.g. in ids and in fns) the same
-	                        adapter.log.debug('Fix isSettings for ' + o.id);
-	                    }
-	                    let fo = fids[o.id];
-	                    if (!fo || fo.mtime < o.common.mtime) {
-	                        let fullfn = adapter.config.rootDir.fullFn (o.fn);
-	                        adapter.log.info('Update Script file ' + o.id + ' from ioBroker');
-	                        Files.write (fullfn, o.common.source, o.common.mtime);
-	                    }
-                    } catch (e) {
-                        adapter.log.error('Error processing file "' + fullfn + '": ' + e);
+                    if (o.isSettings === 'create') {
+                        o.isSettings = true;
+                        //scripts.update(o); //not necessary, o is a reference and the object is everywhere (e.g. in ids and in fns) the same
+                        adapter.log.debug('Fix isSettings for ' + o.id);
+                    }
+                    let fo = fids[o.id];
+                    if (!fo || fo.mtime < o.common.mtime) {
+                        let fullfn = adapter.config.rootDir.fullFn (o.fn);
+                        adapter.log.info('Update Script file ' + o.id + ' from ioBroker');
+                        Files.write (fullfn, o.common.source, o.common.mtime);
                     }
                 });
                 setTimeout(function() {
@@ -735,18 +732,14 @@ function start(restartCount) {
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             let o = files[--i];
             fids[o.id] = o;
-            try {
-	            let obj = scripts.fn2obj (o.fn);
-	            //including all script file types, but ignores typescript definition files '.d.ts'
-	            if ((!obj || obj.common.mtime < o.mtime) && (o.fullfn.endsWith ('.js') || (!o.fullfn.endsWith ('.d.ts') && o.fullfn.endsWith ('.ts')) || o.fullfn.endsWith ('.coffee') || o.fullfn.endsWith ('.blockly'))) {  // at first only files, no directories
-	                if (!obj) rescanRequired = true;
-	                let fobj = Files.getObject (o.fullfn);
-	                scripts.change (o.fn, fobj.source, fobj.mtime, doIt);
-	            } else {
-	                setTimeout(doIt, 0);
-	            }
-            } catch (e) {
-                adapter.log.error('Error processing file "' + o.fullfn + '": ' + e);
+            let obj = scripts.fn2obj (o.fn);
+            //including all script file types, but ignores typescript definition files '.d.ts'
+            if ((!obj || obj.common.mtime < o.mtime) && (o.fullfn.endsWith ('.js') || (!o.fullfn.endsWith ('.d.ts') && o.fullfn.endsWith ('.ts')) || o.fullfn.endsWith ('.coffee') || o.fullfn.endsWith ('.blockly'))) {  // at first only files, no directories
+                if (!obj) rescanRequired = true;
+                let fobj = Files.getObject (o.fullfn);
+                scripts.change (o.fn, fobj.source, fobj.mtime, doIt);
+            } else {
+                setTimeout(doIt, 0);
             }
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
         })();
@@ -909,7 +902,6 @@ function normalizeConfig(config) {
             adapter.log.info(ar[0]);
 
         } catch (e) {
-            adapter.log.error('Error open file "'+fn+'" '+e);
             let i = e;
         }
     };
