@@ -223,19 +223,33 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
         expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
+        var scriptFileTest11 = fullScriptFn(11, 'blockly');
+        expect(fs.existsSync(scriptFileTest11)).to.be.true;
+        expect(fs.readFileSync(scriptFileTest11).toString()).to.be.equal("console.log('" + getTestscriptName(11) + " Blockly - LOCAL');");
+
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
+            expect(obj.common.engineType).not.to.be.equal('Javascript/js');
             expect(obj.common.mtime).not.to.be.equal(1);
             expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
 
             objects.getObject('script.js.tests.Test_Script_3', function(err, obj) {
                 console.log(JSON.stringify(obj));
                 expect(err).to.be.null;
+                expect(obj.common.engineType).not.to.be.equal('Javascript/js');
                 expect(obj.common.mtime).not.to.be.undefined;
                 expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(3) + " - LOCAL');");
 
-                setTimeout(done, nextDelay);
+                objects.getObject('script.js.tests.Test_Script_10', function(err, obj) {
+                    console.log(JSON.stringify(obj));
+                    expect(err).to.be.null;
+                    expect(obj.common.engineType).not.to.be.equal('Blockly');
+                    expect(obj.common.mtime).not.to.be.undefined;
+                    expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(10) + " Blockly - LOCAL');");
+
+                    setTimeout(done, nextDelay);
+                });
             });
         });
     });
