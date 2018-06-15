@@ -109,6 +109,9 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             var scriptFileTest3 = fullScriptFn(3);
             var scriptContent3 = "console.log('" + getTestscriptName(3) + " - LOCAL');";
             fs.writeFileSync(scriptFileTest3,scriptContent3);
+            var fd = fs.openSync(scriptFileTest3, 'w');
+            fs.futimesSync(fd, 1324567890, 1324567890);
+            fs.closeSync(fd);
 
             var scriptFileTest10 = fullScriptFn(10, 'blockly');
             var scriptContent10 = "console.log('" + getTestscriptName(10) + " Blockly - LOCAL');";
@@ -137,7 +140,8 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         "type":             "script",
                         "_id":              "script.js.global.TestGlobal",
                         //"_id":              "script.js.global.Global_Script",
-                        "native": {}
+                        "native": {},
+                        "ts":   1234567890000
                     };
                     objects.setObject(script._id, script, function (err) {
                         expect(err).to.be.not.ok;
@@ -148,7 +152,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                                 "source": "console.log('" + getTestscriptName(1) + "');",
                                 "enabled": true,
                                 "engine": "system.adapter.javascript.0",
-                                "mtime": 1
+                                "mtime": 1234567899
                             },
                             "type": "script",
                             "_id": "script.js.tests.Test_Script_1",
@@ -162,8 +166,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                                     "engineType": "Blockly",
                                     "source": "console.log('" + getTestscriptName(11) + " Blockly');",
                                     "enabled": true,
-                                    "engine": "system.adapter.javascript.0",
-                                    "mtime": 1
+                                    "engine": "system.adapter.javascript.0"
                                 },
                                 "type": "script",
                                 "_id": "script.js.tests.Test_Script_11",
@@ -189,7 +192,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         onObjectChanged = function (id, obj) {
             console.log('Got initial Object-Modification for ' + id);
             if (id.substring(0,10) === 'script.js.') {
-                expect(obj.common.mtime).not.to.be.undefined;
                 changedObjects[id] = true;
                 if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
                     onObjectChanged = null;
@@ -220,34 +222,42 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
     it('Test ' + adapterShortName + ' adapter: Check that js files got created', function (done) {
         this.timeout(60000);
-        var scriptFileTest1 = fullScriptFn(1);
         expect(fs.existsSync(path.join(scriptDir,'js2fs-settings') + '.json')).to.be.true;
+
+        var scriptFileGlobal = path.join(scriptDir, 'global', 'Global Script.js');
+        expect(fs.existsSync(scriptFileGlobal)).to.be.true;
+        expect(fs.readFileSync(scriptFileGlobal).toString()).to.be.equal("console.log('Global');");
+        expect(fs.lstat(scriptFileGlobal).mtime.getUnixTime()).to.be.equal(1234567890);
+
+        var scriptFileTest1 = fullScriptFn(1);
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
         expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
+        expect(fs.lstat(scriptFileTest1).mtime.getUnixTime()).not.to.be.equal(1234567899);
+
         var scriptFileTest11 = fullScriptFn(11, 'blockly');
-        console.log('check: ' + scriptFileTest11);
         expect(fs.existsSync(scriptFileTest11)).to.be.true;
         expect(fs.readFileSync(scriptFileTest11).toString()).to.be.equal("console.log('" + getTestscriptName(11) + " Blockly');");
+        expect(new Date().getUnixTime() - fs.lstat(scriptFileTest11).mtime.getUnixTime()).to.be.less(60);
 
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
             expect(obj.common.engineType).to.be.equal('Javascript/js');
-            expect(obj.common.mtime).not.to.be.equal(1);
+            expect(obj.common.mtime).to.be.equal(0);
             expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
+            expect(new Date().getUnixTime() - obj.ts).to.be.less(60);
 
             objects.getObject('script.js.tests.Test_Script_3', function(err, obj) {
                 console.log(JSON.stringify(obj));
                 expect(err).to.be.null;
                 expect(obj.common.engineType).to.be.equal('Javascript/js');
-                expect(obj.common.mtime).not.to.be.undefined;
                 expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(3) + " - LOCAL');");
+                expect(obj.ts).to.be.equal(1324567890*1000);
 
                 objects.getObject('script.js.tests.Test_Script_10', function(err, obj) {
                     console.log(JSON.stringify(obj));
                     expect(err).to.be.null;
                     expect(obj.common.engineType).to.be.equal('Blockly');
-                    expect(obj.common.mtime).not.to.be.undefined;
                     expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(10) + " Blockly - LOCAL');");
 
                     setTimeout(done, nextDelay);
@@ -267,9 +277,8 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (id !== 'script.js.tests.Test_Script_1') return;
 
             expect(obj2.common.source).to.be.equal(scriptContent);
-            expect(obj2.common.mtime).not.to.be.undefined;
-            expect(((new Date().getTime()/1000)-obj2.common.mtime)<10).to.be.true;
-            expect(obj2.common.mtime).not.to.be.equal(initObj.common.mtime);
+            expect(((new Date().getTime())-obj2.ts)<10000).to.be.true;
+            expect(obj2.ts).not.to.be.equal(initObj.ts);
             onObjectChanged = null;
             setTimeout(done, nextDelay);
         };
@@ -277,7 +286,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
-            expect(obj.common.mtime).not.to.be.undefined;
             initObj = obj;
 
             console.log('CHANGE Local File ' + getTestscriptName(1));
@@ -296,7 +304,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             if (id !== 'script.js.tests.Test_Script_2') return;
 
             expect(obj.common.source).to.be.equal(scriptContent);
-            expect(obj.common.mtime).not.to.be.undefined;
             setTimeout(done, nextDelay);
         };
 

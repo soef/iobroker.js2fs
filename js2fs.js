@@ -222,7 +222,7 @@ let Scripts = function () {
         fns = {};
         objs = {};
         scripts = [];
-        let settingsFound, now = new Date().getUnixTime();
+        let settingsFound, now = new Date().getTime();
         this.globalScript = '';
 
         adapter.objects.getObjectList({
@@ -241,14 +241,18 @@ let Scripts = function () {
                     id: o._id,
                 };
                 let mtime;
-                if (!o.from) { // js-controller < 1.2.0
+                if (!o.from && !o.ts) { // js-controller < 1.2.0
                     if (typeof oo.common.mtime === 'string') {
-                        oo.common.mtime = new Date(oo.common.mtime).getUnixTime();
-                        soef.modifyObject(oo.id, {common: { mtime: oo.common.mtime }});
+                        oo.ts = o.ts = new Date(oo.common.mtime).getTime();
+                        soef.modifyObject(oo.id, {ts: o.ts, common: { mtime: 0 }});
                     }
-                    if (!oo.common.mtime || oo.common.mtime > now) {
-                        oo.common.mtime = now;
-                        soef.modifyObject(oo.id, {common: { mtime: now }});
+                    else if (!oo.common.mtime) {
+                        oo.ts = o.ts = now;
+                        soef.modifyObject(oo.id, {ts: o.ts});
+                    }
+                    else if (oo.common.mtime > now) {
+                        oo.ts = o.ts = now;
+                        soef.modifyObject(oo.id, {ts: o.ts, common: { mtime: 0 }});
                     }
                 }
                 else {
@@ -320,12 +324,13 @@ let Scripts = function () {
         });
     };
 
-    let getmtime = function (fn, common) {
+    let getmtime = function (fn) {
         let stat = soef.lstatSync(adapter.config.rootDir.fullFn(fn));
         if (stat && stat.mtime) {
-            common.mtime = stat.mtime.getUnixTime();
+            return stat.mtime.getUnixTime();
             //adapter.log.debug('getmtime: ' + stat.mtime.toJSON());
         }
+        return 0;
     };
 
     this.removeGlobalScript = function (source) {
@@ -359,13 +364,13 @@ let Scripts = function () {
                 verbose: false,
                 name: name,
                 enabled: false,
-                source: self.removeGlobalScript(data),
-                mtime: mtime
+                source: self.removeGlobalScript(data)
             },
             native: {}
         };
 
-        if (!mtime) getmtime(path, obj.common);
+        if (!mtime) obj.ts = getmtime(path) * 1000;
+            else obj.ts = mtime * 1000;
         adapter.log.debug('scripts.create: New Object: ' + id);
         adapter.log.info('New Script file ' + id + ' found, also create in ioBroker');
         //soef.lastIdToModify = id;
@@ -394,10 +399,10 @@ let Scripts = function () {
             return this.create (fn, source, mtime, callback);
         }
 
-        if (!obj.common || (obj.common.source === source && obj.common.mtime === mtime)) return callback && callback();
+        if (!obj.common || (obj.common.source === source && obj.ts === mtime*1000)) return callback && callback();
 
         obj.common.source = source;
-        obj.common.mtime = mtime;
+        obj.ts = mtime*1000;
 
         if (!obj.isGlobal || !adapter.config.useGlobalScriptAsPrefix) {
             source = this.removeGlobalScript (source);
@@ -428,10 +433,10 @@ let Scripts = function () {
         adapter.log.info('Script file ' + id + ' changed, also update in ioBroker');
         soef.modifyObject(id, function (o) {
             o.common.source = source;
-            o.common.mtime = mtime;
+            if (!o.ts) o.ts = getmtime(fn) * 1000;
+                else o.ts = mtime*1000;
             obj.common.source = source;
-            obj.common.mtime = mtime;
-            if (!mtime) getmtime (fn, o.common);
+            obj.ts = mtime*1000;
             if (adapter.config.restartScript) {
                 oldEnabled = o.common.enabled;
                 o.common.enabled = false;
@@ -504,7 +509,7 @@ files = new (Files = class extends Array {
                 //id: Files.fn2id (fullfn.withoutRoot ()),
                 fullfn: fullfn,
                 fn: fullfn.withoutRoot(), // substr (dir.length),
-                mtime: stat.mtime.getUnixTime (),
+                ts: stat.mtime.getUnixTime ()*1000,
                 size: stat.size,
             };
             let o = scripts.fn2obj(oo.fn);
@@ -549,7 +554,7 @@ files = new (Files = class extends Array {
         let stat = soef.lstatSync(fn);
         obj.source = soef.readFileSync(fn);
         if (obj.source) obj.source = obj.source.toString();
-        obj.mtime = stat.mtime.getUnixTime();
+        obj.ts = stat.mtime.getUnixTime()*1000;
         adapter.log.debug('Files.getObject: mtime=' + stat.mtime.toJSON());
         return obj;
     }
@@ -683,7 +688,8 @@ let watcher = {
                     adapter.getForeignObject(obj.id, function (err, o) {
                         if (err || !o) return;
                         obj.common = o.common;
-                        Files.write(filename.fullFn(), o.common.source, o.common.mtime);
+                        obj.ts = o.ts;
+                        Files.write(filename.fullFn(), o.common.source, new Date(o.ts).getUnixTime());
                     });
                     break;
 
@@ -721,10 +727,10 @@ function start(restartCount) {
                             adapter.log.debug('Fix isSettings for ' + o.id);
                         }
                         let fo = fids[o.id];
-                        if (!fo || fo.mtime < o.common.mtime) {
+                        if (!fo || fo.ts < o.ts) {
                             fullfn = adapter.config.rootDir.fullFn (o.fn);
                             adapter.log.info('Update Script file ' + o.id + ' from ioBroker');
-                            Files.write (fullfn, o.common.source, o.common.mtime);
+                            Files.write (fullfn, o.common.source, new Date(o.ts).getUnixTime());
                         }
                     }
                     catch (e) {
@@ -744,10 +750,10 @@ function start(restartCount) {
             try {
                 let obj = scripts.fn2obj (o.fn);
                 //including all script file types, but ignores typescript definition files '.d.ts'
-                if ((!obj || obj.common.mtime < o.mtime) && (o.fullfn.endsWith ('.js') || (!o.fullfn.endsWith ('.d.ts') && o.fullfn.endsWith ('.ts')) || o.fullfn.endsWith ('.coffee') || o.fullfn.endsWith ('.blockly'))) {  // at first only files, no directories
+                if ((!obj || obj.ts < o.ts) && (o.fullfn.endsWith ('.js') || (!o.fullfn.endsWith ('.d.ts') && o.fullfn.endsWith ('.ts')) || o.fullfn.endsWith ('.coffee') || o.fullfn.endsWith ('.blockly'))) {  // at first only files, no directories
                     if (!obj) rescanRequired = true;
                     let fobj = Files.getObject (o.fullfn);
-                    scripts.change (o.fn, fobj.source, fobj.mtime, doIt);
+                    scripts.change (o.fn, fobj.source, new Date(fobj.ts).getUnixTime(), doIt);
                 } else {
                     setTimeout(doIt, 0);
                 }
