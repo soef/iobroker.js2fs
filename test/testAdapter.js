@@ -200,7 +200,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             console.log('Got initial Object-Modification for ' + id);
             if (id.substring(0,10) === 'script.js.') {
                 changedObjects[id] = true;
-                if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
+                if (Object.keys(changedObjects).length >= 5 && connectionChecked) {
                     onObjectChanged = null;
                     setTimeout(done, nextDelay);
                 }
@@ -218,7 +218,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                         changedObjects['system.adapter.test.0'] = true;
                         states.subscribeMessage('system.adapter.test.0');
                         connectionChecked = true;
-                        if (Object.keys(changedObjects).length >= 3 && connectionChecked) {
+                        if (Object.keys(changedObjects).length >= 5 && connectionChecked) {
                             onObjectChanged = null;
                             setTimeout(done, nextDelay);
                         }
