@@ -437,8 +437,8 @@ let Scripts = function () {
                 else o.ts = mtime*1000;
             obj.common.source = source;
             obj.ts = o.ts;
-            delete obj.mtime;
-            delete o.common.mtime;
+            obj.mtime = 0;
+            o.common.mtime = 0;
             if (adapter.config.restartScript) {
                 oldEnabled = o.common.enabled;
                 o.common.enabled = false;
