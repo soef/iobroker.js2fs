@@ -256,7 +256,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
             expect(obj.common.engineType).to.be.equal('Javascript/js');
-            expect(obj.common.mtime).to.be.equal(0);
             expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
             expect(new Date().getUnixTime() - obj.ts).to.be.below(60);
 
