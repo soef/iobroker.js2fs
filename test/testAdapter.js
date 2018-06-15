@@ -227,18 +227,17 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         var scriptFileGlobal = path.join(scriptDir, 'global', 'Global Script.js');
         expect(fs.existsSync(scriptFileGlobal)).to.be.true;
         expect(fs.readFileSync(scriptFileGlobal).toString()).to.be.equal("console.log('Global');");
-        console.log(JSON.stringify(fs.lstatSync(scriptFileGlobal)));
-        expect(fs.lstatSync(scriptFileGlobal).mtime.getUnixTime()).to.be.equal(1234567890);
+        expect(new Date(fs.lstatSync(scriptFileGlobal).mtime).getUnixTime()).to.be.equal(1234567890);
 
         var scriptFileTest1 = fullScriptFn(1);
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
         expect(fs.readFileSync(scriptFileTest1).toString()).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
-        expect(fs.lstatSync(scriptFileTest1).mtime.getUnixTime()).not.to.be.equal(1234567899);
+        expect(new Date(fs.lstatSync(scriptFileTest1).mtime).getUnixTime()).not.to.be.equal(1234567899);
 
         var scriptFileTest11 = fullScriptFn(11, 'blockly');
         expect(fs.existsSync(scriptFileTest11)).to.be.true;
         expect(fs.readFileSync(scriptFileTest11).toString()).to.be.equal("console.log('" + getTestscriptName(11) + " Blockly');");
-        expect(new Date().getUnixTime() - fs.lstat(scriptFileTest11).mtime.getUnixTime()).to.be.less(60);
+        expect(new Date().getUnixTime() - new Date(fs.lstat(scriptFileTest11).mtime).getUnixTime()).to.be.less(60);
 
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
