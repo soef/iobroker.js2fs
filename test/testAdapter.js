@@ -159,11 +159,11 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                                 "source": "console.log('" + getTestscriptName(1) + "');",
                                 "enabled": true,
                                 "engine": "system.adapter.javascript.0",
-                                "mtime": 1234567899
                             },
                             "type": "script",
                             "_id": "script.js.tests.Test_Script_1",
-                            "native": {}
+                            "native": {},
+                            "ts": 1234567899
                         };
                         objects.setObject(script._id, script, function (err) {
                             expect(err).to.be.not.ok;
