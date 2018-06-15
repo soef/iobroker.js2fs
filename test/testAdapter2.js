@@ -169,7 +169,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         onObjectChanged = function (id, obj) {
             console.log('Got initial Object-Modification for ' + id);
             if (id.substring(0,10) === 'script.js.') {
-                expect(obj.common.mtime).not.to.be.undefined;
                 changedObjects[id] = true;
                 if (Object.keys(changedObjects).length >= 1 && connectionChecked) {
                     onObjectChanged = null;
@@ -208,7 +207,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
-            expect(obj.common.mtime).to.be.equal(1);
+            expect(obj.ts).to.be.equal(1000);
             expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + "');");
 
             objects.getObject('script.js.tests.Test_Script_3', function(err, obj) {
