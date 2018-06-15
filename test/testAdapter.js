@@ -15,6 +15,9 @@ var adapterShortName = setup.adapterName.substring(setup.adapterName.indexOf('.'
 
 var scriptDir = path.join(__dirname, 'myScripts');
 
+function toUnixTime(t) {
+    return ~~(t / 1000);
+}
 Date.prototype.getUnixTime = Date.prototype.getCTime = function () {
     return toUnixTime(this.getTime());
 };
