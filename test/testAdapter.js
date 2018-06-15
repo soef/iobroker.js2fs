@@ -115,8 +115,8 @@ describe('Test ' + adapterShortName + ' adapter', function() {
 
             var scriptFileTest3 = fullScriptFn(3);
             var scriptContent3 = "console.log('" + getTestscriptName(3) + " - LOCAL');";
-            fs.writeFileSync(scriptFileTest3,scriptContent3);
             var fd = fs.openSync(scriptFileTest3, 'w');
+            fs.writeSync(fd,scriptContent3);
             fs.futimesSync(fd, 1324567890, 1324567890);
             fs.closeSync(fd);
 
