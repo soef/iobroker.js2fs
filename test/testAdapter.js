@@ -250,7 +250,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         expect(fs.readFileSync(scriptFileTest11).toString()).to.be.equal("console.log('" + getTestscriptName(11) + " Blockly');");
         stat = fs.lstatSync(scriptFileTest11);
         console.log(' STAT: ' + stat.mtime + ' -> ' + new Date(stat.mtime).toString() + '  --- ' + new Date(stat.mtime).getUnixTime())
-        expect(new Date().getUnixTime() - new Date(stat.mtime).getUnixTime()).to.be.less(60);
+        expect(new Date().getUnixTime() - new Date(stat.mtime).getUnixTime()).to.be.below(60);
 
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
@@ -258,7 +258,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
             expect(obj.common.engineType).to.be.equal('Javascript/js');
             expect(obj.common.mtime).to.be.equal(0);
             expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + " - LOCAL');");
-            expect(new Date().getUnixTime() - obj.ts).to.be.less(60);
+            expect(new Date().getUnixTime() - obj.ts).to.be.below(60);
 
             objects.getObject('script.js.tests.Test_Script_3', function(err, obj) {
                 console.log(JSON.stringify(obj));
