@@ -236,7 +236,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         expect(fs.readFileSync(scriptFileGlobal).toString()).to.be.equal("console.log('Global');");
         var stat = fs.lstatSync(scriptFileGlobal);
         console.log(' STAT: ' + stat.mtime + ' -> ' + new Date(stat.mtime).toString() + '  --- ' + new Date(stat.mtime).getUnixTime())
-        expect(new Date(stat).getUnixTime()).to.be.equal(1234567890);
+        expect(new Date(stat.mtime).getUnixTime()).to.be.equal(1234567890);
 
         var scriptFileTest1 = fullScriptFn(1);
         expect(fs.existsSync(scriptFileTest1)).to.be.true;
