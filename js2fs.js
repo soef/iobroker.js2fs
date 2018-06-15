@@ -348,6 +348,7 @@ let Scripts = function () {
         if (path.endsWith('.ts')) engineType = 'TypeScript/ts';
         if (path.endsWith('.coffee')) engineType = 'Coffeescript/coffee';
         if (path.endsWith('.blockly')) engineType = 'Blockly';
+        adapter.log.debug('create script ' + name + ' for Type ' + engineType);
 
         let obj = {
             type: 'script',
@@ -539,6 +540,7 @@ files = new (Files = class extends Array {
                 fs.closeSync(fd);
             }
         } catch (e) {
+            adapter.log.error('Error file "'+fn+'" '+e);
         }
     }
 
@@ -595,7 +597,8 @@ let watcher = {
         this.handle = chokidar.watch(adapter.config.rootDir, {
             ignored: /(^|[\/\\])\../,
             awaitWriteFinish: true,
-            persistent: true
+            persistent: true,
+            usePolling : adapter.config.usePolling, //default: false - set this to true to successfully watch files over a network
         }). on('ready', function () {
             initialScanComplete = true;
         }). on('all', function (eventType, fullfn, details) {
@@ -710,16 +713,22 @@ function start(restartCount) {
                     return setTimeout(start, 0, (restartCount||0)+1);
                 }
                 scripts.scripts.forEach ((o) => {
-                    if (o.isSettings === 'create') {
-                        o.isSettings = true;
-                        //scripts.update(o); //not necessary, o is a reference and the object is everywhere (e.g. in ids and in fns) the same
-                        adapter.log.debug('Fix isSettings for ' + o.id);
+                    let fullfn;
+                    try {
+                        if (o.isSettings === 'create') {
+                            o.isSettings = true;
+                            //scripts.update(o); //not necessary, o is a reference and the object is everywhere (e.g. in ids and in fns) the same
+                            adapter.log.debug('Fix isSettings for ' + o.id);
+                        }
+                        let fo = fids[o.id];
+                        if (!fo || fo.mtime < o.common.mtime) {
+                            fullfn = adapter.config.rootDir.fullFn (o.fn);
+                            adapter.log.info('Update Script file ' + o.id + ' from ioBroker');
+                            Files.write (fullfn, o.common.source, o.common.mtime);
+                        }
                     }
-                    let fo = fids[o.id];
-                    if (!fo || fo.mtime < o.common.mtime) {
-                        let fullfn = adapter.config.rootDir.fullFn (o.fn);
-                        adapter.log.info('Update Script file ' + o.id + ' from ioBroker');
-                        Files.write (fullfn, o.common.source, o.common.mtime);
+                    catch (e) {
+                        adapter.log.error('Error processing file "' + fullfn + '": ' + e);
                     }
                 });
                 setTimeout(function() {
@@ -732,14 +741,19 @@ function start(restartCount) {
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             let o = files[--i];
             fids[o.id] = o;
-            let obj = scripts.fn2obj (o.fn);
-            //including all script file types, but ignores typescript definition files '.d.ts'
-            if ((!obj || obj.common.mtime < o.mtime) && (o.fullfn.endsWith ('.js') || (!o.fullfn.endsWith ('.d.ts') && o.fullfn.endsWith ('.ts')) || o.fullfn.endsWith ('.coffee') || o.fullfn.endsWith ('.blockly'))) {  // at first only files, no directories
-                if (!obj) rescanRequired = true;
-                let fobj = Files.getObject (o.fullfn);
-                scripts.change (o.fn, fobj.source, fobj.mtime, doIt);
-            } else {
-                setTimeout(doIt, 0);
+            try {
+                let obj = scripts.fn2obj (o.fn);
+                //including all script file types, but ignores typescript definition files '.d.ts'
+                if ((!obj || obj.common.mtime < o.mtime) && (o.fullfn.endsWith ('.js') || (!o.fullfn.endsWith ('.d.ts') && o.fullfn.endsWith ('.ts')) || o.fullfn.endsWith ('.coffee') || o.fullfn.endsWith ('.blockly'))) {  // at first only files, no directories
+                    if (!obj) rescanRequired = true;
+                    let fobj = Files.getObject (o.fullfn);
+                    scripts.change (o.fn, fobj.source, fobj.mtime, doIt);
+                } else {
+                    setTimeout(doIt, 0);
+                }
+            }
+            catch (e) {
+                adapter.log.error('Error processing file "' + o.fullfn + '": ' + e);
             }
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
         })();
@@ -902,6 +916,7 @@ function normalizeConfig(config) {
             adapter.log.info(ar[0]);
 
         } catch (e) {
+            adapter.log.error('Error open file "'+fn+'" '+e);
             let i = e;
         }
     };
