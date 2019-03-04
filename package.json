@@ -35,12 +35,12 @@
     "child_process": "^1.0.2",
     "path": "^0.12.7",
     "soef": "^0.4.4",
-    "chokidar": "^1.7.0"
+    "chokidar": "^1.7.0",
+    "@iobroker/adapter-core": "^1.0.3"
   },
   "devDependencies": {
     "mocha": "^4.1.0",
-    "chai": "^4.1.2",
-    "@iobroker/adapter-core": "^1.0.3"
+    "chai": "^4.1.2"
   },
   "main": "js2fs.js",
   "scripts": {
