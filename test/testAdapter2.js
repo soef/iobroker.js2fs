@@ -143,12 +143,12 @@ describe('Test ' + adapterShortName + ' adapter', function() {
                                 "engineType": "Javascript/js",
                                 "source": "console.log('" + getTestscriptName(1) + "');",
                                 "enabled": true,
-                                "engine": "system.adapter.javascript.0",
-                                "mtime": 1
+                                "engine": "system.adapter.javascript.0"
                             },
                             "type": "script",
                             "_id": "script.js.tests.Test_Script_1",
-                            "native": {}
+                            "native": {},
+                            ts: 1000
                         };
                         objects.setObject(script._id, script, function (err) {
                             expect(err).to.be.not.ok;
@@ -169,7 +169,6 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         onObjectChanged = function (id, obj) {
             console.log('Got initial Object-Modification for ' + id);
             if (id.substring(0,10) === 'script.js.') {
-                expect(obj.common.mtime).not.to.be.undefined;
                 changedObjects[id] = true;
                 if (Object.keys(changedObjects).length >= 1 && connectionChecked) {
                     onObjectChanged = null;
@@ -208,7 +207,7 @@ describe('Test ' + adapterShortName + ' adapter', function() {
         objects.getObject('script.js.tests.Test_Script_1', function(err, obj) {
             console.log(JSON.stringify(obj));
             expect(err).to.be.null;
-            expect(obj.common.mtime).to.be.equal(1);
+            expect(obj.ts).to.be.equal(1000);
             expect(obj.common.source).to.be.equal("console.log('" + getTestscriptName(1) + "');");
 
             objects.getObject('script.js.tests.Test_Script_3', function(err, obj) {

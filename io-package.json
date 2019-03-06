@@ -1,11 +1,16 @@
 {
     "common": {
         "name": "js2fs",
-        "version": "0.1.5",
+        "version": "0.1.6",
         "title": "Javascript to file",
         "desc": "Javascript to file",
         "platform": "Javascript/Node.js",
+        "license": "MIT",
         "news": {
+            "0.1.6": {
+                "en": "Fix Handling of Non-JavaScript types (Apollon77)",
+                "de": "Behandlung von Nicht-JavaScript Typen korrigiert (Apollon77)"
+            },
             "0.1.5": {
                 "en": "Option to poll file states added  (Apollon77)",
                 "de": "Option Dateizustände zu pollen hinzugefügt (Apollon77)"
