@@ -5,6 +5,7 @@
         "title": "Javascript to file",
         "desc": "Javascript to file",
         "platform": "Javascript/Node.js",
+        "license": "MIT",
         "news": {
             "0.1.6": {
                 "en": "Fix Handling of Non-JavaScript types (Apollon77)",
